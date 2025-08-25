@@ -1,0 +1,6 @@
+@MixedDbDistributionTask_HostAddress = http://localhost:5237
+
+GET {{MixedDbDistributionTask_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
