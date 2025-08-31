@@ -7,8 +7,12 @@ namespace MixedDbDistributionTask.Services
     public class DatabaseCreationService
     {
         public Dictionary<string, DbIndex> AvailableDatabases = [];
-        //public DbIndex CreateMasterDbSafe(string location)
-        //    => 
+
+        public DbIndex CreateMasterDbSafe(string location)
+            => CreateSafe(location, "master", true);
+
+        public DbIndex CreateTenantDbSafe(string location, string tenantId)
+            => CreateSafe(location, tenantId, false);
 
         public DbIndex CreateMasterDb(string location)
             => Create(location, "master", true);
@@ -34,8 +38,8 @@ namespace MixedDbDistributionTask.Services
                 {
                     practices.Add(
                         new Practice(
-                            sr.GetString(0), 
-                            sr.GetString(1), 
+                            sr.GetString(0),
+                            sr.GetString(1),
                             sr.GetString(2))
                         );
                 }
@@ -107,6 +111,16 @@ namespace MixedDbDistributionTask.Services
 
             int inserted = sqlCommand.ExecuteNonQuery();
             return inserted > 0;
+        }
+
+        private DbIndex CreateSafe(string location, string name, bool isMaster)
+        {
+            var source = MakeSqliteDataSource(location, name);
+            if (File.Exists(source))
+            {
+                return new DbIndex(source);
+            }
+            else { return Create(location, name, isMaster); }
         }
 
         private DbIndex Create(string location, string name, bool isMaster)

@@ -15,7 +15,6 @@ namespace MixedDbDistributionTask
             //builder.Services.AddControllers();
             builder.Services.AddAuthentication();
             builder.Services.AddAuthorization();
-
             builder.Services.AddGrpc(options =>
             {
                 options.Interceptors.Add<ApiKeyServerInterceptor>();
@@ -35,15 +34,15 @@ namespace MixedDbDistributionTask
                 var masterDb = dbcs.CreateMasterDb(loc);
                 var hillsideDb = dbcs.CreateTenantDb(loc, "hillsidesumo");
 
-                var practices = new Practice[]
-                {
-                    new Practice("practice1", "Practice #1", "The Practice Company"),
-                    new Practice("practice2", "Leaf and Machine", "The Practice Company"),
-                    new Practice("pratice3", "Not a Practice", "Some Competition")
-                };
+                //var practices = new Practice[]
+                //{
+                //    new Practice("practice1", "Practice #1", "The Practice Company"),
+                //    new Practice("practice2", "Leaf and Machine", "The Practice Company"),
+                //    new Practice("pratice3", "Not a Practice", "Some Competition")
+                //};
 
-                //debug insertions for population
-                dbcs.InsertPractices(masterDb, practices);
+                ////debug insertions for population
+                //dbcs.InsertPractices(masterDb, practices);
             }
             else { return; }
 
@@ -87,7 +86,7 @@ namespace MixedDbDistributionTask
                         else
                         {
                             context.Status = new Status(StatusCode.Unauthenticated, "Ungültiger API-Schlüssel.");
-                            return default; //what to use instead?
+                            return default(TResponse); //what to use instead?
                         }
                     }
                     else
@@ -102,6 +101,16 @@ namespace MixedDbDistributionTask
                     throw;
                 }
             }
+        }
+
+        public class ApiKeyRequirement : IAuthorizationRequirement
+        {
+            public ApiKeyRequirement(string key)
+            {
+                Key = key;
+            }
+
+            public string Key { get; private set; }
         }
     }
 

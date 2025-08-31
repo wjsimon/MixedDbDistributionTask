@@ -1,6 +1,5 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
-using System.Net;
 
 namespace MixedDbDistributionGrpcClient
 {
@@ -21,7 +20,7 @@ namespace MixedDbDistributionGrpcClient
         {
             var credentials = CallCredentials.FromInterceptor(async (context, metadata) =>
             {
-                var token = tokenProvider.GetInvalidToken();
+                var token = tokenProvider.GetToken();
                 metadata.Add("api-key", $"{token}");
             });
 

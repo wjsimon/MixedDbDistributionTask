@@ -20,7 +20,7 @@ namespace MixedDbDistributionTask.Services
         {
             return Task.FromResult(new PingReply { Message = "Hello " + request.Payload });
         }
-
+        
         public override Task<PracticesReply> GetPractices(PracticesRequest request, ServerCallContext context)
         {
             var reply = new PracticesReply();
