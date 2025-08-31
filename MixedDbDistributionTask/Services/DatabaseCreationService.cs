@@ -52,10 +52,63 @@ namespace MixedDbDistributionTask.Services
             }
         }
 
-        //public Practice? GetPractice(string ik)
-        //{
+        public Remedy[] GetFixedRemedies(DbIndex dbIndex) 
+        {
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
 
-        //}
+            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectFixedRemedies, connection);
+            using var sr = sqlCommand.ExecuteReader();
+
+            if (sr.HasRows)
+            {
+                List<Remedy> remedies = [];
+                while (sr.Read())
+                {
+                    remedies.Add(
+                        new Remedy(
+                            sr.GetString(0),
+                            sr.GetString(1),
+                            sr.GetBoolean(2))
+                        );
+                }
+
+                return remedies.ToArray();
+            }
+            else
+            {
+                return [];
+            }
+        }
+
+        public Remedy[] GetTenantRemedies(DbIndex tenantIndex)
+        {
+            using var connection = new SqliteConnection(tenantIndex.Source);
+            connection.Open();
+
+            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectRemedies, connection);
+            using var sr = sqlCommand.ExecuteReader();
+
+            if (sr.HasRows)
+            {
+                List<Remedy> remedies = [];
+                while (sr.Read())
+                {
+                    remedies.Add(
+                        new Remedy(
+                            sr.GetString(0),
+                            sr.GetString(1),
+                            sr.GetBoolean(2))
+                        );
+                }
+
+                return remedies.ToArray();
+            }
+            else
+            {
+                return [];
+            }
+        }
 
         public int InsertPractices(DbIndex dbIndex, params Practice[]? practices)
         {
@@ -86,6 +139,45 @@ namespace MixedDbDistributionTask.Services
                     ikParam.Value = practices[i].Ik;
                     nameParam.Value = practices[i].Name;
                     companyParam.Value = practices[i].Company;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public int InsertRemedies(DbIndex dbIndex, params Remedy[]? remedies)
+        {
+            if (remedies == null || remedies.Length == 0) { return 0; }
+
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsMaster.InsertRemedy;
+
+                var diagnosisParam = sqlCommand.CreateParameter();
+                diagnosisParam.ParameterName = "@diagnosis";
+
+                var nameParam = sqlCommand.CreateParameter();
+                nameParam.ParameterName = "@name";
+
+                var isFixedParam = sqlCommand.CreateParameter();
+                isFixedParam.ParameterName = "@is_fixed_type";
+
+                sqlCommand.Parameters.AddRange([diagnosisParam, nameParam, isFixedParam]);
+
+                for (int i = 0; i < remedies.Length; i++)
+                {
+                    diagnosisParam.Value = remedies[i].Diagnosis;
+                    nameParam.Value = remedies[i].Name;
+                    isFixedParam.Value = remedies[i].IsFixed;
 
                     inserted += sqlCommand.ExecuteNonQuery();
                 }

@@ -25,6 +25,12 @@ namespace MixedDbDistributionTask.Sql
             INSERT INTO Practice (ik, name, company)
             VALUES (@ik, @name, @company);";
 
+        public const string InsertRemedy = @"
+            INSERT INTO Remedy (diagnosis, name, is_fixed_type)
+            VALUES (@diagnosis, @name, @is_fixed_type);";
+
         public const string SelectPractices = @"SELECT * From Practice;";
+        public const string SelectRemedies = @"SELECT * From Remedy";
+        public const string SelectFixedRemedies = @"SELECT * From Remedy WHERE is_fixed_type = 1";
     }
 }

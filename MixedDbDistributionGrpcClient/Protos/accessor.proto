@@ -7,6 +7,7 @@ package accessor;
 service Accessor {
 	rpc Ping (PingRequest) returns (PingReply);
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
+	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
 }
 
 message PingRequest {
@@ -29,4 +30,18 @@ message PracticesRequest {
 
 message PracticesReply {
 	repeated PracticeObj practices = 1;
+}
+
+message RemedyObj {
+	string diagnosis = 1;
+	string name = 2;
+	bool isFixed = 3;
+}
+
+message RemedyRequest {
+	bool fixedOnly = 1;
+}
+
+message RemedyReply {
+	repeated RemedyObj remedies = 1;
 }

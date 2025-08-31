@@ -10,9 +10,12 @@ namespace MixedDbDistributionGrpcClient
             using var channel = CreateAuthenticatedChannel(new ClientTokenProvider()); //replace with DI
 
             var accessorClient = new Accessor.AccessorClient(channel);
-            var reply = await accessorClient.GetPracticesAsync(new PracticesRequest());
+            var practicesReply = await accessorClient.GetPracticesAsync(new PracticesRequest());
+            var remediesReply = await accessorClient.GetRemediesAsync(new RemedyRequest());
 
-            var practices = reply.Practices;
+            var practices = practicesReply.Practices;
+            var remedies = remediesReply.Remedies;
+
             Console.ReadKey();
         }
 

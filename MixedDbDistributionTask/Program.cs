@@ -1,5 +1,6 @@
 using MixedDbDistributionTask.Services;
 using MixedDbDistributionTask.Classes;
+using MixedDbDistributionTask.Data;
 
 namespace MixedDbDistributionTask
 {
@@ -39,6 +40,15 @@ namespace MixedDbDistributionTask
 
                 ////debug insertions for population
                 //dbcs.InsertPractices(masterDb, practices);
+
+                var fixedRemedies = new Remedy[]
+                {
+                    new Remedy("bad", "The Bad One", true),
+                    new Remedy("even worse", "Wouldn't want to be you", true),
+                    new Remedy("good", "All good buddy", true)
+                };
+
+                //dbcs.InsertRemedies(masterDb, fixedRemedies);
             }
             else { return; }
 
