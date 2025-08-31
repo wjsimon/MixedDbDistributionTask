@@ -24,6 +24,8 @@ namespace MixedDbDistributionTask.Services
         public override Task<PracticesReply> GetPractices(PracticesRequest request, ServerCallContext context)
         {
             var reply = new PracticesReply();
+            var debugTenant = context.UserState["tenant"]; //HAS to be set if it made it here
+
             if (_dbcs.AvailableDatabases.TryGetValue("master", out DbIndex index))
             {
                 var practices = _dbcs.GetPractices(index);
