@@ -12,9 +12,11 @@ namespace MixedDbDistributionGrpcClient
             var accessorClient = new Accessor.AccessorClient(channel);
             var practicesReply = await accessorClient.GetPracticesAsync(new PracticesRequest());
             var remediesReply = await accessorClient.GetRemediesAsync(new RemedyRequest());
+            var patientsReply = await accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = "practice1" });
 
             var practices = practicesReply.Practices;
             var remedies = remediesReply.Remedies;
+            var patients = patientsReply.Patients;
 
             Console.ReadKey();
         }

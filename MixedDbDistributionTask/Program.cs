@@ -28,8 +28,8 @@ namespace MixedDbDistributionTask
 
             if (loc != null)
             {
-                var masterDb = dbcs.CreateMasterDb(loc);
-                var hillsideDb = dbcs.CreateTenantDb(loc, "hillsidesumo");
+                var masterDb = dbcs.CreateMasterDbSafe(loc);
+                var hillsideDb = dbcs.CreateTenantDbSafe(loc, "hillsidesumo");
 
                 //var practices = new Practice[]
                 //{
@@ -41,14 +41,23 @@ namespace MixedDbDistributionTask
                 ////debug insertions for population
                 //dbcs.InsertPractices(masterDb, practices);
 
-                var fixedRemedies = new Remedy[]
-                {
-                    new Remedy("bad", "The Bad One", true),
-                    new Remedy("even worse", "Wouldn't want to be you", true),
-                    new Remedy("good", "All good buddy", true)
-                };
+                //var fixedRemedies = new Remedy[]
+                //{
+                //    new Remedy("bad", "The Bad One", true),
+                //    new Remedy("even worse", "Wouldn't want to be you", true),
+                //    new Remedy("good", "All good buddy", true)
+                //};
 
                 //dbcs.InsertRemedies(masterDb, fixedRemedies);
+
+                //var patients = new Patient[]
+                //{
+                //    new Patient("0", "practice1", "Wilhelm Simon", 29),
+                //    new Patient("1", "practice1", "Hannes Roever", -1),
+                //    new Patient("2", "practice2", "Raphael Schweda", -1)
+                //};
+
+                //dbcs.InsertPatients(masterDb, patients);
             }
             else { return; }
 

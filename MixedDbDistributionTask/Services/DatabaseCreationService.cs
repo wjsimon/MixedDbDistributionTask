@@ -14,12 +14,6 @@ namespace MixedDbDistributionTask.Services
         public DbIndex CreateTenantDbSafe(string location, string tenantId)
             => CreateSafe(location, tenantId, false);
 
-        public DbIndex CreateMasterDb(string location)
-            => Create(location, "master", true);
-
-        public DbIndex CreateTenantDb(string location, string tenantId)
-            => Create(location, tenantId, false);
-
         public bool GenerateMasterDebugData() { return true; }
         public bool GenerateTenantDebugData() { return true; }
 
@@ -110,6 +104,38 @@ namespace MixedDbDistributionTask.Services
             }
         }
 
+        public Patient[] GetPatients(DbIndex master, string practiceIk)
+        {
+            using var connection = new SqliteConnection(master.Source);
+            connection.Open();
+
+            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatientsForPractice, connection);
+            sqlCommand.Parameters.AddWithValue("@practice_ik", practiceIk);
+
+            using var sr = sqlCommand.ExecuteReader();
+
+            if (sr.HasRows)
+            {
+                List<Patient> patients = [];
+                while (sr.Read())
+                {
+                    patients.Add(
+                        new Patient(
+                            sr.GetString(0),
+                            sr.GetString(1),
+                            sr.GetString(2),
+                            sr.GetInt32(3))
+                        );
+                }
+
+                return patients.ToArray();
+            }
+            else
+            {
+                return [];
+            }
+        }
+
         public int InsertPractices(DbIndex dbIndex, params Practice[]? practices)
         {
             if (practices == null || practices.Length == 0) { return 0; }
@@ -178,6 +204,49 @@ namespace MixedDbDistributionTask.Services
                     diagnosisParam.Value = remedies[i].Diagnosis;
                     nameParam.Value = remedies[i].Name;
                     isFixedParam.Value = remedies[i].IsFixed;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public int InsertPatients(DbIndex dbIndex, params Patient[]? patients)
+        {
+            if (patients == null || patients.Length == 0) { return 0; }
+
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsMaster.InsertPatient;
+
+                var kvParam = sqlCommand.CreateParameter();
+                kvParam.ParameterName = "@kv_nummer";
+
+                var ikParam = sqlCommand.CreateParameter();
+                ikParam.ParameterName = "@practice_ik";
+
+                var nameParam = sqlCommand.CreateParameter();
+                nameParam.ParameterName = "@name";
+                
+                var ageParam = sqlCommand.CreateParameter();
+                ageParam.ParameterName = "@age";
+
+                sqlCommand.Parameters.AddRange([kvParam, ikParam, nameParam, ageParam]);
+
+                for (int i = 0; i < patients.Length; i++)
+                {
+                    kvParam.Value = patients[i].KvNummer;
+                    ikParam.Value = patients[i].PracticeIk;
+                    nameParam.Value = patients[i].Name;
+                    ageParam.Value = patients[i].Age;
 
                     inserted += sqlCommand.ExecuteNonQuery();
                 }

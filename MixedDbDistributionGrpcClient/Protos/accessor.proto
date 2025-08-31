@@ -8,6 +8,7 @@ service Accessor {
 	rpc Ping (PingRequest) returns (PingReply);
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
+	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
 }
 
 message PingRequest {
@@ -44,4 +45,19 @@ message RemedyRequest {
 
 message RemedyReply {
 	repeated RemedyObj remedies = 1;
+}
+
+message PatientObj {
+	string kvNummer = 1;
+	string practiveIk = 2;
+	string name = 3;
+	int32 age = 4;
+}
+
+message PatientRequest {
+	string practiceIk = 1;
+}
+
+message PatientReply {
+	repeated PatientObj patients = 1;
 }

@@ -52,5 +52,18 @@ namespace MixedDbDistributionTask.Services
 
             return Task.FromResult(reply);
         }
+
+        public override Task<PatientReply> GetPatientsForPractice(PatientRequest request, ServerCallContext context)
+        {
+            var reply = new PatientReply();
+
+            if (_dbcs.AvailableDatabases.TryGetValue("master", out DbIndex master))
+            {
+                var patients = _dbcs.GetPatients(master, request.PracticeIk);
+                reply.Patients.AddRange(patients.Select(p => new PatientObj() { KvNummer = p.KvNummer, PracticeIk = p.PracticeIk, Name = p.Name, Age = p.Age }));
+            }
+
+            return Task.FromResult(reply);
+        }
     }
 }
