@@ -11,7 +11,7 @@ namespace MixedDbDistributionGrpcClient
 
             var accessorClient = new Accessor.AccessorClient(channel);
             var practicesReply = await accessorClient.GetPracticesAsync(new PracticesRequest());
-            var remediesReply = await accessorClient.GetRemediesAsync(new RemedyRequest());
+            var remediesReply = await accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
             var patientsReply = await accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = "practice1" });
 
             var practices = practicesReply.Practices;
@@ -25,8 +25,11 @@ namespace MixedDbDistributionGrpcClient
         {
             var credentials = CallCredentials.FromInterceptor(async (context, metadata) =>
             {
-                var token = tokenProvider.GetToken();
-                metadata.Add("api-key", $"{token}");
+                var token = tokenProvider.GetToken(context);
+                if (token != null)
+                {
+                    metadata.Add("api-key", $"{token}");
+                }
             });
 
             var channel = GrpcChannel.ForAddress("https://localhost:7103", new GrpcChannelOptions

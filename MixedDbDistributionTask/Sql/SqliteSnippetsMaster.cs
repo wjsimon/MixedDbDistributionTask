@@ -33,9 +33,10 @@
             INSERT INTO Patient (kv_nummer, practice_ik, name, age)
             VALUES (@kv_nummer, @practice_ik, @name, @age)";
 
-        public const string SelectPractices = @"SELECT * From Practice;";
-        public const string SelectRemedies = @"SELECT * From Remedy";
-        public const string SelectFixedRemedies = @"SELECT * From Remedy WHERE is_fixed_type = 1";
+        public const string SelectPractice = @"SELECT * FROM Practice WHERE ik = @ik;";
+        public const string SelectPractices = @"SELECT * FROM Practice;";
+        public const string SelectRemedies = @"SELECT * FROM Remedy";
+        public const string SelectFixedRemedies = @"SELECT * FROM Remedy WHERE is_fixed_type = 1";
         public const string SelectPatientsForPractice = @"SELECT * FROM Patient, Practice WHERE Patient.practice_ik = Practice.ik AND Practice.ik = @practice_ik";
     }
 }

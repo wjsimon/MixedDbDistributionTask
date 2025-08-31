@@ -28,7 +28,7 @@ namespace MixedDbDistributionTask.Services
             if (_dbcs.AvailableDatabases.TryGetValue("master", out DbIndex index))
             {
                 var practices = _dbcs.GetPractices(index);
-                reply.Practices.AddRange(practices.Select(p => new PracticeObj() { Ik = p.Ik, Name = p.Name, Company = p.Company }));
+                reply.Practices.AddRange(practices.Select(p => new PracticeDto() { Ik = p.Ik, Name = p.Name, Company = p.Company }));
             }
 
             return Task.FromResult(reply);
@@ -41,12 +41,12 @@ namespace MixedDbDistributionTask.Services
             if (_dbcs.AvailableDatabases.TryGetValue("master", out DbIndex master))
             {
                 var fixedRemedies = _dbcs.GetFixedRemedies(master);
-                reply.Remedies.AddRange(fixedRemedies.Select(r => new RemedyObj() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
+                reply.Remedies.AddRange(fixedRemedies.Select(r => new RemedyDto() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
 
                 if (!request.FixedOnly && _dbcs.AvailableDatabases.TryGetValue(context.UserState["tenant"].ToString()!, out DbIndex tenantDb))
                 {
                     var remedies = _dbcs.GetTenantRemedies(tenantDb);
-                    reply.Remedies.AddRange(remedies.Select(r => new RemedyObj() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
+                    reply.Remedies.AddRange(remedies.Select(r => new RemedyDto() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
                 }
             }
 
@@ -60,7 +60,7 @@ namespace MixedDbDistributionTask.Services
             if (_dbcs.AvailableDatabases.TryGetValue("master", out DbIndex master))
             {
                 var patients = _dbcs.GetPatients(master, request.PracticeIk);
-                reply.Patients.AddRange(patients.Select(p => new PatientObj() { KvNummer = p.KvNummer, PracticeIk = p.PracticeIk, Name = p.Name, Age = p.Age }));
+                reply.Patients.AddRange(patients.Select(p => new PatientDto() { KvNummer = p.KvNummer, PracticeIk = p.Practice.Ik, Name = p.Name, Age = p.Age }));
             }
 
             return Task.FromResult(reply);

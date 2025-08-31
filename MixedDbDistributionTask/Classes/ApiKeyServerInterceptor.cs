@@ -26,14 +26,19 @@ namespace MixedDbDistributionTask.Classes
             try
             {
                 var key = context.RequestHeaders.Get("api-key");
-                if (key != null && _validApiKeys.TryGetValue(key.Value, out string? tenantId))
+
+                if (key == null && context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method
+                {
+                    return await continuation(request, context);
+                }
+                else if (key != null && _validApiKeys.TryGetValue(key.Value, out string? tenantId))
                 {
                     context.UserState.Add("tenant", tenantId);
                     return await continuation(request, context);
                 }
                 else
                 {
-                    context.Status = new Status(StatusCode.Unauthenticated, "api key missing or invalid");
+                    context.Status = new Status(StatusCode.Unauthenticated, "required api key missing or invalid");
                     return default;
                 }
             }

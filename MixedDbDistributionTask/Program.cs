@@ -1,6 +1,5 @@
-using MixedDbDistributionTask.Services;
 using MixedDbDistributionTask.Classes;
-using MixedDbDistributionTask.Data;
+using MixedDbDistributionTask.Services;
 
 namespace MixedDbDistributionTask
 {
@@ -31,33 +30,33 @@ namespace MixedDbDistributionTask
                 var masterDb = dbcs.CreateMasterDbSafe(loc);
                 var hillsideDb = dbcs.CreateTenantDbSafe(loc, "hillsidesumo");
 
-                //var practices = new Practice[]
+                //var practices = new PracticeDto[]
                 //{
-                //    new Practice("practice1", "Practice #1", "The Practice Company"),
-                //    new Practice("practice2", "Leaf and Machine", "The Practice Company"),
-                //    new Practice("pratice3", "Not a Practice", "Some Competition")
+                //    new PracticeDto() { Ik = "practice1", Name = "Practice #1", Company = "The Practice Company" },
+                //    new PracticeDto() { Ik = "practice2", Name = "Leaf and Machine", Company = "The Practice Company" },
+                //    new PracticeDto() { Ik = "pratice3", Name = "Not a Practice", Company = "Some Competition" }
                 //};
 
                 ////debug insertions for population
-                //dbcs.InsertPractices(masterDb, practices);
+                //DatabaseWriterService.InsertPractices(masterDb, practices);
 
-                //var fixedRemedies = new Remedy[]
+                //var fixedRemedies = new RemedyDto[]
                 //{
-                //    new Remedy("bad", "The Bad One", true),
-                //    new Remedy("even worse", "Wouldn't want to be you", true),
-                //    new Remedy("good", "All good buddy", true)
+                //    new RemedyDto() { Diagnosis = "bad", Name = "The Bad One", IsFixed = true },
+                //    new RemedyDto() { Diagnosis = "even worse", Name = "Wouldn't want to be you", IsFixed = true },
+                //    new RemedyDto() { Diagnosis = "good", Name = "All good buddy", IsFixed = true }
                 //};
 
-                //dbcs.InsertRemedies(masterDb, fixedRemedies);
+                //DatabaseWriterService.InsertRemedies(masterDb, fixedRemedies);
 
-                //var patients = new Patient[]
+                //var patients = new PatientDto[]
                 //{
-                //    new Patient("0", "practice1", "Wilhelm Simon", 29),
-                //    new Patient("1", "practice1", "Hannes Roever", -1),
-                //    new Patient("2", "practice2", "Raphael Schweda", -1)
+                //    new PatientDto() { KvNummer = "0", PracticeIk = "practice1", Name = "Wilhelm Simon", Age = 29 },
+                //    new PatientDto() { KvNummer = "1", PracticeIk = "practice1", Name = "Hannes Roever", Age = -1 },
+                //    new PatientDto() { KvNummer = "2", PracticeIk = "practice2", Name = "Raphael Schweda", Age = -1 }
                 //};
 
-                //dbcs.InsertPatients(masterDb, patients);
+                //DatabaseWriterService.InsertPatients(masterDb, patients);
             }
             else { return; }
 
