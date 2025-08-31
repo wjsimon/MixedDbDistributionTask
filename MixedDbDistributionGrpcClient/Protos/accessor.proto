@@ -9,6 +9,8 @@ service Accessor {
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
 	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
+	rpc GetTherapist(TherapistRequest) returns (TherapistReply);
+	rpc GetAppointmentForPatientAtPractice(AppointmentRequest) returns (AppointmentReply);
 }
 
 message PingRequest {
@@ -49,7 +51,7 @@ message RemedyReply {
 
 message PatientDto {
 	string kvNummer = 1;
-	string practiveIk = 2;
+	string practiceIk = 2;
 	string name = 3;
 	int32 age = 4;
 }
@@ -60,4 +62,36 @@ message PatientRequest {
 
 message PatientReply {
 	repeated PatientDto patients = 1;
+}
+
+message TherapistDto {
+	string id = 1;
+	string name = 2;
+}
+
+message TherapistRequest {
+	string id = 1;
+}
+
+message TherapistReply {
+	TherapistDto therapist = 1;
+}
+
+message AppointmentDto {
+	string id = 1;
+	string startTime = 2;
+	string endTime = 3;
+	string therapistId = 4;
+	string patientKv = 5;
+	string practiceIk = 6;
+	string remedyDiagnosis = 7;
+}
+
+message AppointmentRequest {
+	string patientKv = 1;
+	string practiceIk = 2;
+}
+
+message AppointmentReply {
+	AppointmentDto appointment = 1;
 }

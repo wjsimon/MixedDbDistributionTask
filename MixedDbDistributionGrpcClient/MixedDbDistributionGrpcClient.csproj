@@ -17,6 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MixedDbDistributionTask.Shared\MixedDbDistributionTask.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="Protos\accessor.proto" GrpcServices="Client" />
   </ItemGroup>
 

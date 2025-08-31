@@ -1,4 +1,4 @@
-﻿namespace MixedDbDistributionTask.Data
+﻿namespace MixedDbDistributionTask.Shared.Data
 {
     public record struct Appointment(
         string Id,

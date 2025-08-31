@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixedDbDistributionTask", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixedDbDistributionGrpcClient", "MixedDbDistributionGrpcClient\MixedDbDistributionGrpcClient.csproj", "{1811CDB8-F223-4283-8894-669FA3B616E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixedDbDistributionTask.Shared", "MixedDbDistributionTask.Shared\MixedDbDistributionTask.Shared.csproj", "{7339616C-F654-4F20-8120-330FB41C18A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{1811CDB8-F223-4283-8894-669FA3B616E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1811CDB8-F223-4283-8894-669FA3B616E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1811CDB8-F223-4283-8894-669FA3B616E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7339616C-F654-4F20-8120-330FB41C18A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7339616C-F654-4F20-8120-330FB41C18A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7339616C-F654-4F20-8120-330FB41C18A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7339616C-F654-4F20-8120-330FB41C18A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

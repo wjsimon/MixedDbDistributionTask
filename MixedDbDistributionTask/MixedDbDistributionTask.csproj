@@ -20,4 +20,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MixedDbDistributionTask.Shared\MixedDbDistributionTask.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

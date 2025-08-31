@@ -8,7 +8,7 @@
                 name TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS Appointment(
-                id INTEGER PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 starttime TEXT NOT NULL,
                 endtime TEXT NOT NULL,
                 therapist TEXT NOT NULL,
@@ -22,5 +22,15 @@
                 name TEXT NOT NULL,
                 is_fixed_type INTEGER
             );";
+
+        public const string InsertAppointment = @"
+            INSERT INTO Appointment (id, starttime, endtime, therapist, patient, practice, remedy)
+            VALUES (@id, @starttime, @endtime, @therapist, @patient, @practice, @remedy)
+        ";
+
+        public const string InsertTherapist = @"
+            INSERT INTO Therapist (id, name)
+            VALUES (@id, @name);
+        ";
     }
 }

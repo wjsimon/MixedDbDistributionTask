@@ -1,10 +1,11 @@
 ﻿using Microsoft.Data.Sqlite;
 using MixedDbDistributionTask.Data;
+using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Services
 {
-    public static class DatabaseWriterService
+    internal static class DatabaseWriterService
     {
         public static int InsertPractices(DbIndex dbIndex, params PracticeDto[]? practices)
         {
@@ -127,7 +128,98 @@ namespace MixedDbDistributionTask.Services
             return inserted;
         }
 
-        public static bool InsertSinglePractice(DbIndex dbIndex, Practice practice)
+        public static int InsertTherapists(DbIndex dbIndex, params TherapistDto[]? therapists)
+        {
+            if (therapists == null || therapists.Length == 0) { return 0; }
+
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsTenant.InsertTherapist;
+
+                var idParam = sqlCommand.CreateParameter();
+                idParam.ParameterName = "@id";
+
+                var nameParam = sqlCommand.CreateParameter();
+                nameParam.ParameterName = "@name";
+
+
+                sqlCommand.Parameters.AddRange([idParam, nameParam]);
+
+                for (int i = 0; i < therapists.Length; i++)
+                {
+                    idParam.Value = therapists[i].Id;
+                    nameParam.Value = therapists[i].Name;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public static int InsertAppointments(DbIndex dbIndex, params AppointmentDto[]? appointments)
+        {
+            if (appointments == null || appointments.Length == 0) { return 0; }
+
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsTenant.InsertAppointment;
+
+                var idParam = sqlCommand.CreateParameter();
+                idParam.ParameterName = "@id";
+
+                var startParam = sqlCommand.CreateParameter();
+                startParam.ParameterName = "@starttime";
+
+                var endParam = sqlCommand.CreateParameter();
+                endParam.ParameterName = "@endtime";
+
+                var therapistParam = sqlCommand.CreateParameter();
+                therapistParam.ParameterName = "@therapist";
+
+                var patientParam = sqlCommand.CreateParameter();
+                patientParam.ParameterName = "@patient";
+
+                var practiceParam = sqlCommand.CreateParameter();
+                practiceParam.ParameterName = "@practice";
+
+                var remedyParam = sqlCommand.CreateParameter();
+                remedyParam.ParameterName = "@remedy";
+
+                sqlCommand.Parameters.AddRange([idParam, startParam, endParam, therapistParam, patientParam, practiceParam, remedyParam]);
+
+                for (int i = 0; i < appointments.Length; i++)
+                {
+                    idParam.Value = appointments[i].Id;
+                    startParam.Value = appointments[i].StartTime;
+                    endParam.Value = appointments[i].EndTime;
+                    therapistParam.Value = appointments[i].TherapistId;
+                    patientParam.Value = appointments[i].PatientKv;
+                    practiceParam.Value = appointments[i].PracticeIk;
+                    remedyParam.Value = appointments[i].RemedyDiagnosis;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public static bool InsertSinglePractice(DbIndex dbIndex, PracticeDto practice)
             => InsertSinglePractice(dbIndex, practice.Ik, practice.Name, practice.Company);
 
         public static bool InsertSinglePractice(DbIndex dbIndex, string ik, string name, string company)

@@ -1,10 +1,11 @@
 ﻿using Microsoft.Data.Sqlite;
 using MixedDbDistributionTask.Data;
+using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Services
 {
-    public class DatabaseCreationService
+    internal class DatabaseCreationService
     {
         public Dictionary<string, DbIndex> AvailableDatabases = [];
 
@@ -14,146 +15,62 @@ namespace MixedDbDistributionTask.Services
         public DbIndex CreateTenantDbSafe(string location, string tenantId)
             => CreateSafe(location, tenantId, false);
 
-        public bool GenerateMasterDebugData() { return true; }
-        public bool GenerateTenantDebugData() { return true; }
-
-        public Practice[] GetPractices(DbIndex dbIndex)
+        public bool WriteMasterDebugData(DbIndex dbIndex)
         {
-            using var connection = new SqliteConnection(dbIndex.Source);
-            connection.Open();
-
-            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPractices, connection);
-            using var sr = sqlCommand.ExecuteReader();
-
-            if (sr.HasRows)
+            var practices = new PracticeDto[]
             {
-                List<Practice> practices = [];
-                while (sr.Read())
-                {
-                    practices.Add(
-                        new Practice(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetString(2))
-                        );
-                }
+                    new PracticeDto() { Ik = "practice1", Name = "Practice #1", Company = "The Practice Company" },
+                    new PracticeDto() { Ik = "practice2", Name = "Leaf and Machine", Company = "The Practice Company" },
+                    new PracticeDto() { Ik = "pratice3", Name = "Not a Practice", Company = "Some Competition" }
+            };
 
-                return practices.ToArray();
-            }
-            else
+            //debug insertions for population
+            DatabaseWriterService.InsertPractices(dbIndex, practices);
+
+            var fixedRemedies = new RemedyDto[]
             {
-                return [];
-            }
+                    new RemedyDto() { Diagnosis = "bad", Name = "The Bad One", IsFixed = true },
+                    new RemedyDto() { Diagnosis = "evenworse", Name = "Wouldn't want to be you", IsFixed = true },
+                    new RemedyDto() { Diagnosis = "good", Name = "All good buddy", IsFixed = true }
+            };
+
+            DatabaseWriterService.InsertRemedies(dbIndex, fixedRemedies);
+
+            var patients = new PatientDto[]
+            {
+                    new PatientDto() { KvNummer = "0", PracticeIk = "practice1", Name = "Wilhelm Simon", Age = 29 },
+                    new PatientDto() { KvNummer = "1", PracticeIk = "practice1", Name = "Hannes Roever", Age = -1 },
+                    new PatientDto() { KvNummer = "2", PracticeIk = "practice2", Name = "Raphael Schweda", Age = -1 }
+            };
+
+            DatabaseWriterService.InsertPatients(dbIndex, patients);
+            return true;
         }
 
-        public Remedy[] GetFixedRemedies(DbIndex dbIndex) 
+        public bool WriteTenantDebugData(DbIndex dbIndex)
         {
-            using var connection = new SqliteConnection(dbIndex.Source);
-            connection.Open();
-
-            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectFixedRemedies, connection);
-            using var sr = sqlCommand.ExecuteReader();
-
-            if (sr.HasRows)
+            var therapists = new TherapistDto[]
             {
-                List<Remedy> remedies = [];
-                while (sr.Read())
-                {
-                    remedies.Add(
-                        new Remedy(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetBoolean(2))
-                        );
-                }
+                    new TherapistDto() { Id = "therapist1", Name = "Viktor Frankenstein" }
+            };
 
-                return remedies.ToArray();
-            }
-            else
+            DatabaseWriterService.InsertTherapists(dbIndex, therapists);
+
+            var appointments = new AppointmentDto[]
             {
-                return [];
-            }
-        }
-
-        public Remedy[] GetTenantRemedies(DbIndex tenantIndex)
-        {
-            using var connection = new SqliteConnection(tenantIndex.Source);
-            connection.Open();
-
-            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectRemedies, connection);
-            using var sr = sqlCommand.ExecuteReader();
-
-            if (sr.HasRows)
-            {
-                List<Remedy> remedies = [];
-                while (sr.Read())
-                {
-                    remedies.Add(
-                        new Remedy(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetBoolean(2))
-                        );
-                }
-
-                return remedies.ToArray();
-            }
-            else
-            {
-                return [];
-            }
-        }
-
-        public Patient[] GetPatients(DbIndex master, string practiceIk)
-        {
-            using var connection = new SqliteConnection(master.Source);
-            connection.Open();
-
-            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatientsForPractice, connection);
-            sqlCommand.Parameters.AddWithValue("@practice_ik", practiceIk);
-
-            using var sr = sqlCommand.ExecuteReader();
-
-            if (sr.HasRows)
-            {
-                List<Patient> patients = [];
-                while (sr.Read())
-                {
-                    using var practiceCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPractice, connection);
-                    practiceCommand.Parameters.AddWithValue("@ik", sr.GetString(1));
-
-                    using var practiceSr = practiceCommand.ExecuteReader();
-
-                    if (!practiceSr.HasRows) { throw new InvalidDataException("invalid request, practice could not be queried"); }
-
-                    Practice practice = default;
-                    while (practiceSr.Read())
-                    {
-                        practice = new Practice(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetString(2));
-
-                        break;
+                    new AppointmentDto() {
+                        Id = "appointment1",
+                        StartTime = new DateTime(2025, 08, 31, 22, 30, 0).ToString("yyyy-MM-dd HH:mm:ss"),
+                        EndTime = new DateTime(2025, 08, 31, 22, 31, 0).ToString("yyyy-MM-dd HH:mm:ss"),
+                        PatientKv = "0",
+                        PracticeIk = "practice1",
+                        TherapistId = "therapist1",
+                        RemedyDiagnosis = "evenworse"
                     }
+            };
 
-                    if (practice == default) { throw new InvalidDataException("invalid request, practice was found but not assigned"); }
-                    
-                    patients.Add(
-                        new Patient(
-                            sr.GetString(0),
-                            practice,
-                            sr.GetString(2),
-                            sr.GetInt32(3))
-                        );
-                }
-
-                return patients.ToArray();
-            }
-            else
-            {
-                return [];
-            }
+            DatabaseWriterService.InsertAppointments(dbIndex, appointments);
+            return true;
         }
 
         private DbIndex CreateSafe(string location, string name, bool isMaster)
