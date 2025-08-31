@@ -6,6 +6,7 @@ namespace MixedDbDistributionTask.Services
 {
     public class DatabaseCreationService
     {
+        public Dictionary<string, DbIndex> AvailableDatabases = [];
         //public DbIndex CreateMasterDbSafe(string location)
         //    => 
 
@@ -117,6 +118,7 @@ namespace MixedDbDistributionTask.Services
             using var sqlCommand = new SqliteCommand(isMaster ? SqliteSnippetsMaster.Create : SqliteSnippetsTenant.Create, connection);
             sqlCommand.ExecuteNonQuery();
 
+            AvailableDatabases.TryAdd(name, dbIndex);
             return dbIndex;
         }
 

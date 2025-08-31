@@ -1,6 +1,4 @@
 ﻿using Grpc.Net.Client;
-using MixedDbDistributionGrpcClient;
-using System.Threading.Tasks;
 
 namespace MixedDbDistributionGrpcClient
 {
@@ -10,9 +8,9 @@ namespace MixedDbDistributionGrpcClient
         {
             using var channel = GrpcChannel.ForAddress("https://localhost:7103");
             var accessorClient = new Accessor.AccessorClient(channel);
-            var reply = await accessorClient.PingAsync(new PingRequest() { Payload = "Test" });
+            var reply = await accessorClient.GetPracticesAsync(new PracticesRequest());
 
-            Console.WriteLine(reply.Message);
+            var practices = reply.Practices;
             Console.ReadKey();
         }
     }

@@ -6,6 +6,7 @@ package accessor;
 
 service Accessor {
 	rpc Ping (PingRequest) returns (PingReply);
+	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 }
 
 message PingRequest {
@@ -14,4 +15,18 @@ message PingRequest {
 
 message PingReply {
 	string message = 1;
+}
+
+message PracticeObj {
+	string ik = 1;
+	string name = 2;
+	string company = 3;
+}
+
+message PracticesRequest {
+	repeated string iks = 1;
+}
+
+message PracticesReply {
+	repeated PracticeObj practices = 1;
 }
