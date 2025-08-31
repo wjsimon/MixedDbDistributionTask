@@ -1,3 +1,4 @@
+using MixedDbDistributionTask.Data;
 using MixedDbDistributionTask.Services;
 
 namespace MixedDbDistributionTask
@@ -8,7 +9,11 @@ namespace MixedDbDistributionTask
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
+            //builder.Services.AddControllers();
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
+            builder.Services.AddGrpc();
+
             builder.AddServices();
 
             var app = builder.Build();
@@ -20,16 +25,29 @@ namespace MixedDbDistributionTask
 
             if (loc != null) 
             {
-                dbcs.CreateMasterDb(loc);
-                dbcs.CreateTenantDb(loc, "hillsidesumo"); 
+                var masterDb = dbcs.CreateMasterDb(loc);
+                var hillsideDb = dbcs.CreateTenantDb(loc, "hillsidesumo");
+
+                var practices = new Practice[]
+                {
+                    new Practice("practice1", "Practice #1", "The Practice Company"),
+                    new Practice("practice2", "Leaf and Machine", "The Practice Company"),
+                    new Practice("pratice3", "Not a Practice", "Some Competition")
+                };
+
+                //debug insertions for population
+                dbcs.InsertPractices(masterDb, practices);
             }
             else { return; }
 
-            return;
+            app.UseRouting();
 
-            app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
-            app.MapControllers();
+            //app.MapControllers();
+
+            app.MapGrpcService<AccessorService>();
+            app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
             app.Run();
         }

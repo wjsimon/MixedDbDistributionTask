@@ -1,6 +1,4 @@
 ﻿namespace MixedDbDistributionTask.Data
 {
-    public class Practice
-    {
-    }
+    public record struct Practice(string Ik, string Name, string Company);
 }

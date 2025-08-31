@@ -1,6 +1,8 @@
-﻿namespace MixedDbDistributionTask.Sql
+﻿using Microsoft.Data.Sqlite;
+
+namespace MixedDbDistributionTask.Sql
 {
-    public static class SqlSnippetsMaster
+    public static class SqliteSnippetsMaster
     {
         public const string Create = @"
             CREATE TABLE IF NOT EXISTS Practice(
@@ -18,5 +20,11 @@
                 name TEXT NOT NULL,
                 is_fixed_type INTEGER
             );";
+
+        public const string InsertPractice = @"
+            INSERT INTO Practice (ik, name, company)
+            VALUES (@ik, @name, @company);";
+
+        public const string SelectPractices = @"SELECT * From Practice;";
     }
 }

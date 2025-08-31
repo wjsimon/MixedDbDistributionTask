@@ -1,6 +1,6 @@
 ﻿namespace MixedDbDistributionTask.Sql
 {
-    public static class SqlSnippetsTenant
+    public static class SqliteSnippetsTenant
     {
         public const string Create = @"
             CREATE TABLE IF NOT EXISTS Therapist(

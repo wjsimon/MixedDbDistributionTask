@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "MixedDbDistributionTask";
+
+package accessor;
+
+service Accessor {
+	rpc Ping (PingRequest) returns (PingReply);
+}
+
+message PingRequest {
+	string payload = 1;
+}
+
+message PingReply {
+	string message = 1;
+}

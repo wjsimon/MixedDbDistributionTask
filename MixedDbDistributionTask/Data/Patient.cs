@@ -1,6 +1,4 @@
 ﻿namespace MixedDbDistributionTask.Data
 {
-    public class Patient
-    {
-    }
+    public record struct Patient(string KvNummer, string Name, int Age);
 }
