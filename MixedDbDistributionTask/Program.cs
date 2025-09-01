@@ -32,25 +32,6 @@ namespace MixedDbDistributionTask
 
             var app = builder.Build();
 
-            var config = app.Services.GetRequiredService<IConfiguration>();
-            var dbcs = app.Services.GetRequiredService<DatabaseCreationService>();
-
-            var loc = config["ConnectionStrings:SqliteMasterDeb"];
-
-            if (loc != null)
-            {
-                if(dbcs.CreateMasterDbSafe(loc))
-                {
-                    dbcs.WriteMasterDebugData(dbcs.MasterIndex);
-                }
-                
-                if(dbcs.CreateTenantDbSafe(loc, "henara"))
-                {
-                    dbcs.WriteTenantDebugData(dbcs.GetIndex("henara"));
-                }
-            }
-            else { return; }
-
             app.UseRouting();
 
             app.UseCors("_myAllowSpecificOrigins");
@@ -59,6 +40,8 @@ namespace MixedDbDistributionTask
             app.UseAuthorization();
 
             app.MapGrpcService<AccessorService>().EnableGrpcWeb();
+            app.MapGrpcService<DatabaseManagerService>().EnableGrpcWeb();
+
             app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
             app.Run();

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option csharp_namespace = "MixedDbDistribution.Dashboard";
+
+package databases;
+
+service DatabaseManager {
+	rpc GetDatabaseAvailability(DatabasesRequest) returns (DatabasesReply);
+	rpc CreateMasterDatabase(DatabaseCreationRequest) returns (DatabaseCreationReply);
+	rpc CreateTenantDatabase(DatabaseCreationRequest) returns (DatabaseCreationReply);
+	rpc GenerateDebugData(GenerationRequest) returns (GenerationReply);
+}
+
+message DatabasesRequest { }
+
+message DatabasesReply { 
+	bool masterAvailable = 1;
+	repeated string availableDatabases = 2;
+}
+
+message DatabaseCreationRequest {
+	string tenantId = 1;
+}
+
+message DatabaseCreationReply { }
+
+message GenerationRequest {
+	int32 selection = 1;
+	string tenantId = 2;
+}
+
+message GenerationReply { }

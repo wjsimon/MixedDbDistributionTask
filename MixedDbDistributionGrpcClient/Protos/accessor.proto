@@ -6,7 +6,6 @@ package accessor;
 
 service Accessor {
 	rpc Ping (PingRequest) returns (PingReply);
-	rpc GetDatabaseAvailability(DatabasesRequest) returns (DatabasesReply);
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
 	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
@@ -21,13 +20,6 @@ message PingRequest {
 
 message PingReply {
 	string message = 1;
-}
-
-message DatabasesRequest { }
-
-message DatabasesReply { 
-	bool masterAvailable = 1;
-	repeated string availableDatabases = 2;
 }
 
 message PracticeDto {

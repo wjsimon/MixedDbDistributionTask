@@ -11,6 +11,7 @@ namespace MixedDbDistributionTask.Services
         private Dictionary<string, DbIndex> _availableDatabases = [];
 
         public DbIndex MasterIndex => _availableDatabases["master"];
+        public bool MasterAvailable => _availableDatabases.ContainsKey("master");
 
         public bool CreateMasterDbSafe(string location)
             => CreateSafe(location, "master", true);
@@ -27,7 +28,7 @@ namespace MixedDbDistributionTask.Services
         public bool TryGetIndex(string id, out DbIndex index)
             => _availableDatabases.TryGetValue(id, out index);
 
-        public bool WriteMasterDebugData(DbIndex dbIndex)
+        public bool GenerateMasterDebugData(DbIndex dbIndex)
         {
             var practices = new PracticeUtility.DbStub[]
             {
@@ -59,7 +60,7 @@ namespace MixedDbDistributionTask.Services
             return true;
         }
 
-        public bool WriteTenantDebugData(DbIndex dbIndex)
+        public bool GenerateTenantDebugData(DbIndex dbIndex)
         {
             var therapists = new TherapistUtility.DbStub[]
             {

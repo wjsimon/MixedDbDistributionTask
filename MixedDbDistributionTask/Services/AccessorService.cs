@@ -22,15 +22,6 @@ namespace MixedDbDistributionTask.Services
             return Task.FromResult(new PingReply { Message = "Hello " + request.Payload });
         }
 
-        public override Task<DatabasesReply> GetDatabaseAvailability(DatabasesRequest request, ServerCallContext context)
-        {
-            var reply = new DatabasesReply();
-            reply.MasterAvailable = _dbcs.MasterIndex != default;
-            reply.AvailableDatabases.AddRange(_dbcs.GetAvailableDatabases());
-
-            return Task.FromResult(reply);
-        }
-
         public override Task<PracticesReply> GetPractices(PracticesRequest request, ServerCallContext context)
         {
             var reply = new PracticesReply();

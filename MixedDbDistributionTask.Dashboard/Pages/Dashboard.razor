@@ -5,20 +5,50 @@
 @implements IDisposable
 @inject DashboardViewModel ViewModel
 
-<div class="w-100 h-100 flex flex-column justify-content-center align-items-center">
+<div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
     <span>Hey, there! :)</span>
 
     @if (!ViewModel.MasterAvailable)
     {
-        <div class="flex flex-column justify-content-center">
+        <div class="d-flex flex-column justify-content-center align-items-center">
             <span>No master database seems to have been created. Create a new master database now?</span>
-            <button @onclick="CreateMasterDatabase">Go!</button>
+            <button class="" style="width: fit-content;" @onclick="ViewModel.CreateMasterDatabase">Go!</button>
+        </div>
+    }
+    @*     else if (ViewModel.AvailableTenants.Length == 0)
+    {
+        <div class="flex flex-column justify-content-center">
+            <span>Would you also like to generate a tenant right away?</span>
+            <div class="flex flex-row justify-content-center gap-4">
+                <button @onclick="(e) => ViewModel.CreateTenantDatabase()">Yes!</button>
+                <button @onclick="CreateMasterDatabase">No!</button>
+            </div>
+        </div>
+    } *@
+
+    @if (ViewModel.ShowDebugDataPrompt)
+    {
+        <div class="d-flex flex-column justify-content-center align-items-center">
+            <span>Would you also like to generate some debug data? :)</span>
+            <span>You can also generate more data later.</span>
+            <div class="d-flex flex-row justify-content-center gap-4">
+                <button @onclick="(e) => HandleDebugDataCreation(true)">Yes!</button>
+                <button @onclick="(e) => HandleDebugDataCreation(false)">No!</button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-2">
+            @foreach (var tenant in ViewModel.AvailableTenants)
+            {
+                <span>@tenant</span>
+            }
         </div>
     }
 </div>
 
 @code {
-
     protected override void OnInitialized()
     {
         ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
@@ -29,9 +59,18 @@
         ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
     }
 
-    private async Task<bool> CreateMasterDatabase()
+    private void HandleDebugDataCreation(bool create)
     {
-        return await ViewModel.CreateMasterDatabase();
+        ViewModel.DismissDebugDataPrompt();
+
+        if (create)
+        {
+            Task.Run(async () =>
+            {
+                await ViewModel.GenerateDebugData(1);
+                await InvokeAsync(StateHasChanged);
+            });
+        }
     }
 
     private void HandleDatabaseAvailabilityChanged(object? sender, EventArgs args)
