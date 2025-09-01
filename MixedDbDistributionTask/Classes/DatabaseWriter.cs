@@ -1,12 +1,13 @@
 ﻿using Microsoft.Data.Sqlite;
 using MixedDbDistributionTask.Data;
+using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Classes
 {
     internal static class DatabaseWriter
     {
-        public static int InsertPractices(DbIndex dbIndex, params PracticeDto[]? practices)
+        public static int InsertPractices(DbIndex dbIndex, params PracticeUtility.DbStub[]? practices)
         {
             if (practices == null || practices.Length == 0) { return 0; }
 
@@ -45,7 +46,7 @@ namespace MixedDbDistributionTask.Classes
             return inserted;
         }
 
-        public static int InsertRemedies(DbIndex dbIndex, params RemedyDto[]? remedies)
+        public static int InsertRemedies(DbIndex dbIndex, params RemedyUtility.DbStub[]? remedies)
         {
             if (remedies == null || remedies.Length == 0) { return 0; }
 
@@ -84,7 +85,7 @@ namespace MixedDbDistributionTask.Classes
             return inserted;
         }
 
-        public static int InsertPatients(DbIndex dbIndex, params PatientDto[]? patients)
+        public static int InsertPatients(DbIndex dbIndex, params PatientUtility.DbStub[]? patients)
         {
             if (patients == null || patients.Length == 0) { return 0; }
 
@@ -127,7 +128,7 @@ namespace MixedDbDistributionTask.Classes
             return inserted;
         }
 
-        public static int InsertTherapists(DbIndex dbIndex, params TherapistDto[]? therapists)
+        public static int InsertTherapists(DbIndex dbIndex, params TherapistUtility.DbStub[]? therapists)
         {
             if (therapists == null || therapists.Length == 0) { return 0; }
 
@@ -163,7 +164,7 @@ namespace MixedDbDistributionTask.Classes
             return inserted;
         }
 
-        public static int InsertAppointments(DbIndex dbIndex, params AppointmentDto[]? appointments)
+        public static int InsertAppointments(DbIndex dbIndex, params AppointmentUtility.DbStub[]? appointments)
         {
             if (appointments == null || appointments.Length == 0) { return 0; }
 
@@ -218,7 +219,7 @@ namespace MixedDbDistributionTask.Classes
             return inserted;
         }
 
-        public static bool InsertSinglePractice(DbIndex dbIndex, PracticeDto practice)
+        public static bool InsertSinglePractice(DbIndex dbIndex, PracticeUtility.DbStub practice)
             => InsertSinglePractice(dbIndex, practice.Ik, practice.Name, practice.Company);
 
         public static bool InsertSinglePractice(DbIndex dbIndex, string ik, string name, string company)

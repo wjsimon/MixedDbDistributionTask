@@ -28,8 +28,7 @@ namespace MixedDbDistributionTask.Services
 
             if (_dbcs.TryGetIndex("master", out DbIndex index))
             {
-                var practices = DatabaseReader.GetPractices(index);
-                reply.Practices.AddRange(practices.Select(p => new PracticeDto() { Ik = p.Ik, Name = p.Name, Company = p.Company }));
+                reply.Practices.AddRange(DatabaseReader.GetPractices(index));
             }
 
             return Task.FromResult(reply);
@@ -46,8 +45,7 @@ namespace MixedDbDistributionTask.Services
 
                 if (!request.FixedOnly && _dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb))
                 {
-                    var remedies = DatabaseReader.GetTenantRemedies(tenantDb);
-                    reply.Remedies.AddRange(remedies.Select(r => new RemedyDto() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
+                    reply.Remedies.AddRange(DatabaseReader.GetTenantRemedies(tenantDb));
                 }
             }
 
@@ -60,8 +58,7 @@ namespace MixedDbDistributionTask.Services
 
             if (_dbcs.TryGetIndex("master", out DbIndex master))
             {
-                var patients = DatabaseReader.GetPatients(master, request.PracticeIk);
-                reply.Patients.AddRange(patients.Select(p => new PatientDto() { KvNummer = p.KvNummer, PracticeIk = p.Practice.Ik, Name = p.Name, Age = p.Age }));
+                reply.Patients.AddRange(DatabaseReader.GetPatients(master, request.PracticeIk));
             }
 
             return Task.FromResult(reply);
@@ -73,17 +70,8 @@ namespace MixedDbDistributionTask.Services
 
             if (_dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
-                var appointments = DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, tenantDb, request.PatientKv, request.PracticeIk);
-                reply.Appointments.AddRange(appointments.Select(a => new AppointmentDto()
-                {
-                    Id = a.Id, 
-                    StartTime = a.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    EndTime = a.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    TherapistId = a.Therapist.Id,
-                    PatientKv = a.Patient.KvNummer,
-                    PracticeIk = a.Practice.Ik,
-                    RemedyDiagnosis = a.Remedy.Diagnosis
-                }));
+                reply.Appointments.AddRange(
+                    DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, tenantDb, request.PatientKv, request.PracticeIk));
             }
                 
             return Task.FromResult(reply);
@@ -95,17 +83,8 @@ namespace MixedDbDistributionTask.Services
 
             if (_dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
-                var appointments = DatabaseReader.GetAppointmentsForTherapist(_dbcs.MasterIndex, tenantDb, request.TherapistId);
-                reply.Appointments.AddRange(appointments.Select(a => new AppointmentDto()
-                {
-                    Id = a.Id,
-                    StartTime = a.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    EndTime = a.EndTime.ToString("yyyy-MM-dd HH:mm:ss"),
-                    TherapistId = a.Therapist.Id,
-                    PatientKv = a.Patient.KvNummer,
-                    PracticeIk = a.Practice.Ik,
-                    RemedyDiagnosis = a.Remedy.Diagnosis
-                }));
+                reply.Appointments.AddRange(
+                    DatabaseReader.GetAppointmentsForTherapist(_dbcs.MasterIndex, tenantDb, request.TherapistId));
             }
 
             return Task.FromResult(reply);

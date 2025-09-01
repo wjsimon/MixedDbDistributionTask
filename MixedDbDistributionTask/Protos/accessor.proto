@@ -52,7 +52,7 @@ message RemedyReply {
 
 message PatientDto {
 	string kvNummer = 1;
-	string practiceIk = 2;
+	PracticeDto practice = 2;
 	string name = 3;
 	int32 age = 4;
 }
@@ -82,10 +82,10 @@ message AppointmentDto {
 	string id = 1;
 	string startTime = 2;
 	string endTime = 3;
-	string therapistId = 4;
-	string patientKv = 5;
-	string practiceIk = 6;
-	string remedyDiagnosis = 7;
+	TherapistDto therapist = 4;
+	PatientDto patient = 5;
+	PracticeDto practice = 6;
+	RemedyDto remedy = 7;
 }
 
 message AppointmentRequest {

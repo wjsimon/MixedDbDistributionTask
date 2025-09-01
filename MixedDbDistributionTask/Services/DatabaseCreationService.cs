@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using MixedDbDistributionTask.Classes;
 using MixedDbDistributionTask.Data;
+using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Services
@@ -25,30 +26,30 @@ namespace MixedDbDistributionTask.Services
 
         public bool WriteMasterDebugData(DbIndex dbIndex)
         {
-            var practices = new PracticeDto[]
+            var practices = new PracticeUtility.DbStub[]
             {
-                    new PracticeDto() { Ik = "practice1", Name = "Practice #1", Company = "The Practice Company" },
-                    new PracticeDto() { Ik = "practice2", Name = "Leaf and Machine", Company = "The Practice Company" },
-                    new PracticeDto() { Ik = "pratice3", Name = "Not a Practice", Company = "Some Competition" }
+                new PracticeUtility.DbStub("practice1", "Practice #1",  "The Practice Company"),
+                new PracticeUtility.DbStub("practice2", "Leaf and Machine", "The Practice Company"),
+                new PracticeUtility.DbStub("practice3", "Not a Practice", "Some Competition")
             };
 
             //debug insertions for population
             DatabaseWriter.InsertPractices(dbIndex, practices);
 
-            var fixedRemedies = new RemedyDto[]
+            var fixedRemedies = new RemedyUtility.DbStub[]
             {
-                    new RemedyDto() { Diagnosis = "bad", Name = "The Bad One", IsFixed = true },
-                    new RemedyDto() { Diagnosis = "evenworse", Name = "Wouldn't want to be you", IsFixed = true },
-                    new RemedyDto() { Diagnosis = "good", Name = "All good buddy", IsFixed = true }
+                new RemedyUtility.DbStub("bad", "The Bad One", 1),
+                new RemedyUtility.DbStub("evenworse", "Wouldn't want to be you", 1),
+                new RemedyUtility.DbStub("good", "All good buddy", 1)
             };
 
             DatabaseWriter.InsertRemedies(dbIndex, fixedRemedies);
 
-            var patients = new PatientDto[]
+            var patients = new PatientUtility.DbStub[]
             {
-                    new PatientDto() { KvNummer = "0", PracticeIk = "practice1", Name = "Wilhelm Simon", Age = 29 },
-                    new PatientDto() { KvNummer = "1", PracticeIk = "practice1", Name = "Hannes Roever", Age = -1 },
-                    new PatientDto() { KvNummer = "2", PracticeIk = "practice2", Name = "Raphael Schweda", Age = -1 }
+                    new PatientUtility.DbStub("0", "practice1", "Wilhelm Simon", 29),
+                    new PatientUtility.DbStub("1", "practice1", "Hannes Roever", -1),
+                    new PatientUtility.DbStub("2", "practice2", "Raphael Schweda", -1)
             };
 
             DatabaseWriter.InsertPatients(dbIndex, patients);
@@ -57,24 +58,24 @@ namespace MixedDbDistributionTask.Services
 
         public bool WriteTenantDebugData(DbIndex dbIndex)
         {
-            var therapists = new TherapistDto[]
+            var therapists = new TherapistUtility.DbStub[]
             {
-                new TherapistDto() { Id = "therapist1", Name = "Viktor Frankenstein" }
+                new TherapistUtility.DbStub("therapist1", "Viktor Frankenstein")
             };
 
             DatabaseWriter.InsertTherapists(dbIndex, therapists);
 
-            var appointments = new AppointmentDto[]
+            var appointments = new AppointmentUtility.DbStub[]
             {
-                    new AppointmentDto() {
-                        Id = "appointment1",
-                        StartTime = new DateTime(2025, 08, 31, 22, 30, 0).ToString("yyyy-MM-dd HH:mm:ss"),
-                        EndTime = new DateTime(2025, 08, 31, 22, 31, 0).ToString("yyyy-MM-dd HH:mm:ss"),
-                        PatientKv = "0",
-                        PracticeIk = "practice1",
-                        TherapistId = "therapist1",
-                        RemedyDiagnosis = "evenworse"
-                    }
+                    new AppointmentUtility.DbStub(
+                        "appointment1",
+                        "2025-08-31 22:30:00",
+                        "2025-08-31 22:31:00",
+                        "therapist1",
+                        "0",
+                        "practice1",
+                        "evenworse"
+                    )
             };
 
             DatabaseWriter.InsertAppointments(dbIndex, appointments);

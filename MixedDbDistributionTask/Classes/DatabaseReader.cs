@@ -8,7 +8,7 @@ namespace MixedDbDistributionTask.Classes
 {
     internal static class DatabaseReader
     {
-        public static Practice[] GetPractices(DbIndex dbIndex)
+        public static PracticeDto[] GetPractices(DbIndex dbIndex)
         {
             using var connection = new SqliteConnection(dbIndex.Source);
             connection.Open();
@@ -18,10 +18,10 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Practice> practices = [];
+                List<PracticeDto> practices = [];
                 while (sr.Read())
                 {
-                    practices.Add(Practice.From(sr));
+                    practices.Add(PracticeUtility.DTO(sr));
                 }
 
                 return practices.ToArray();
@@ -32,7 +32,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static Remedy[] GetFixedRemedies(DbIndex dbIndex)
+        public static RemedyDto[] GetFixedRemedies(DbIndex dbIndex)
         {
             using var connection = new SqliteConnection(dbIndex.Source);
             connection.Open();
@@ -42,15 +42,10 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Remedy> remedies = [];
+                List<RemedyDto> remedies = [];
                 while (sr.Read())
                 {
-                    remedies.Add(
-                        new Remedy(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetBoolean(2))
-                        );
+                    remedies.Add(RemedyUtility.DTO(sr));
                 }
 
                 return remedies.ToArray();
@@ -61,7 +56,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static Remedy[] GetTenantRemedies(DbIndex tenantIndex)
+        public static RemedyDto[] GetTenantRemedies(DbIndex tenantIndex)
         {
             using var connection = new SqliteConnection(tenantIndex.Source);
             connection.Open();
@@ -71,15 +66,10 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Remedy> remedies = [];
+                List<RemedyDto> remedies = [];
                 while (sr.Read())
                 {
-                    remedies.Add(
-                        new Remedy(
-                            sr.GetString(0),
-                            sr.GetString(1),
-                            sr.GetBoolean(2))
-                        );
+                    remedies.Add(RemedyUtility.DTO(sr));
                 }
 
                 return remedies.ToArray();
@@ -90,7 +80,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static Patient[] GetPatients(DbIndex master, string practiceIk)
+        public static PatientDto[] GetPatients(DbIndex master, string practiceIk)
         {
             using var connection = new SqliteConnection(master.Source);
             connection.Open();
@@ -102,16 +92,11 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Patient> patients = [];
+                List<PatientDto> patients = [];
                 while (sr.Read())
                 {
                     patients.Add(
-                        new Patient(
-                            sr.GetString(0),
-                            GetSinglePractice(connection, sr.GetString(1)),
-                            sr.GetString(2),
-                            sr.GetInt32(3))
-                        );
+                        PatientUtility.From(sr, GetSinglePractice(connection, sr.GetString(1))));
                 }
 
                 return patients.ToArray();
@@ -122,7 +107,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static Appointment[] GetAppointmentsForPatientForPractice(DbIndex masterDb, DbIndex tenantDb, string patientKv, string practiceIk)
+        public static AppointmentDto[] GetAppointmentsForPatientForPractice(DbIndex masterDb, DbIndex tenantDb, string patientKv, string practiceIk)
         {
             using var connectionMaster = new SqliteConnection(masterDb.Source);
             using var connectionTenant = new SqliteConnection(tenantDb.Source);
@@ -137,19 +122,17 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Appointment> appointments = new List<Appointment>();
+                List<AppointmentDto> appointments = new List<AppointmentDto>();
 
                 while (sr.Read())
                 {
-                    appointments.Add(new Appointment(
-                        sr.GetString(0),
-                        DateTime.ParseExact(sr.GetString(1), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(sr.GetString(2), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
+                    appointments.Add(AppointmentUtility.DTO(
+                        sr,
                         GetSingleTherapist(connectionTenant, sr.GetString(3)),
                         GetSinglePatient(connectionMaster, sr.GetString(4)),
                         GetSinglePractice(connectionMaster, sr.GetString(5)),
-                        SearchSingleRemedy(connectionMaster, connectionTenant, sr.GetString(6))
-                    ));
+                        SearchSingleRemedy(connectionMaster, connectionTenant, sr.GetString(6)))
+                    );
                 }
 
                 return appointments.ToArray();
@@ -160,7 +143,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static Appointment[] GetAppointmentsForTherapist(DbIndex masterDb, DbIndex tenantDb, string therapistId)
+        public static AppointmentDto[] GetAppointmentsForTherapist(DbIndex masterDb, DbIndex tenantDb, string therapistId)
         {
             using var connectionMaster = new SqliteConnection(masterDb.Source);
             using var connectionTenant = new SqliteConnection(tenantDb.Source);
@@ -174,19 +157,17 @@ namespace MixedDbDistributionTask.Classes
 
             if (sr.HasRows)
             {
-                List<Appointment> appointments = new List<Appointment>();
+                List<AppointmentDto> appointments = new List<AppointmentDto>();
 
                 while (sr.Read())
                 {
-                    appointments.Add(new Appointment(
-                        sr.GetString(0),
-                        DateTime.ParseExact(sr.GetString(1), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
-                        DateTime.ParseExact(sr.GetString(2), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture),
+                    appointments.Add(AppointmentUtility.DTO(
+                        sr,
                         GetSingleTherapist(connectionTenant, sr.GetString(3)),
                         GetSinglePatient(connectionMaster, sr.GetString(4)),
                         GetSinglePractice(connectionMaster, sr.GetString(5)),
-                        SearchSingleRemedy(connectionMaster, connectionTenant, sr.GetString(6))
-                    ));
+                        SearchSingleRemedy(connectionMaster, connectionTenant, sr.GetString(6)))
+                    );
                 }
 
                 return appointments.ToArray();
@@ -197,7 +178,7 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        private static Practice GetSinglePractice(SqliteConnection connection, string ik)
+        private static PracticeDto GetSinglePractice(SqliteConnection connection, string ik)
         {
             using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPractice, connection);
             sqlCommand.Parameters.AddWithValue("@ik", ik);
@@ -206,10 +187,10 @@ namespace MixedDbDistributionTask.Classes
 
             if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
 
-            Practice practice = default;
+            PracticeDto practice = default;
             while (sr.Read())
             {
-                practice = Practice.From(sr);
+                practice = PracticeUtility.DTO(sr);
                 break;
             }
 
@@ -218,7 +199,7 @@ namespace MixedDbDistributionTask.Classes
             return practice;
         }
 
-        private static Therapist GetSingleTherapist(SqliteConnection connection, string id)
+        private static TherapistDto GetSingleTherapist(SqliteConnection connection, string id)
         {
             using var sqlCommand = new SqliteCommand(SqliteSnippetsTenant.SelectTherapist, connection);
             sqlCommand.Parameters.AddWithValue("@id", id);
@@ -227,19 +208,19 @@ namespace MixedDbDistributionTask.Classes
 
             if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
 
-            Therapist therapist = default;
+            TherapistDto? therapist = null;
             while (sr.Read())
             {
-                therapist = Therapist.From(sr);
+                therapist = TherapistUtility.From(sr);
                 break;
             }
 
-            if (therapist == default) { throw new InvalidDataException("invalid request, therapist was found but not assigned"); }
+            if (therapist == null) { throw new InvalidDataException("invalid request, therapist was found but not assigned"); }
 
             return therapist;
         }
 
-        private static Patient GetSinglePatient(SqliteConnection connection, string kv)
+        private static PatientDto GetSinglePatient(SqliteConnection connection, string kv)
         {
             using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatient, connection);
             sqlCommand.Parameters.AddWithValue("@kv_nummer", kv);
@@ -248,19 +229,19 @@ namespace MixedDbDistributionTask.Classes
 
             if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
 
-            Patient patient = default;
+            PatientDto? patient = null;
             while (sr.Read())
             {
-                patient = Patient.From(sr, GetSinglePractice(connection, sr.GetString(1))); //possible since they are both on the master
+                patient = PatientUtility.From(sr, GetSinglePractice(connection, sr.GetString(1))); //possible since they are both on the master
                 break;
             }
 
-            if (patient == default) { throw new InvalidDataException("invalid request, patient was found but not assigned"); }
+            if (patient == null) { throw new InvalidDataException("invalid request, patient was found but not assigned"); }
 
             return patient;
         }
 
-        private static Remedy SearchSingleRemedy(SqliteConnection connectionMaster, SqliteConnection connectionTenant, string diagnosis)
+        private static RemedyDto SearchSingleRemedy(SqliteConnection connectionMaster, SqliteConnection connectionTenant, string diagnosis)
         {
             //need to search for the remedy here! it could be in either db, but has to be in one of them;
             var remedy = TryGetSingleRemedy(connectionMaster, SqliteSnippetsMaster.SelectRemedy, diagnosis);
@@ -271,10 +252,10 @@ namespace MixedDbDistributionTask.Classes
                 if (remedy == null) { throw new InvalidDataException($"requested diagnosis unknown"); }
             }
 
-            return (Remedy)remedy!;
+            return remedy;
         }
 
-        private static Remedy? TryGetSingleRemedy(SqliteConnection connection, string snippet, string diagnosis)
+        private static RemedyDto? TryGetSingleRemedy(SqliteConnection connection, string snippet, string diagnosis)
         {
             using var sqlCommand = new SqliteCommand(snippet, connection);
             sqlCommand.Parameters.AddWithValue("@diagnosis", diagnosis);
@@ -283,14 +264,14 @@ namespace MixedDbDistributionTask.Classes
 
             if (!sr.HasRows) { return null; } //valid
 
-            Remedy remedy = default;
+            RemedyDto? remedy = null;
             while (sr.Read())
             {
-                remedy = Remedy.From(sr);
+                remedy = RemedyUtility.DTO(sr);
                 break;
             }
 
-            if (remedy == default) { throw new InvalidDataException("invalid request, therapist was found but not assigned"); }
+            if (remedy == null) { throw new InvalidDataException("invalid request, therapist was found but not assigned"); }
 
             return remedy;
         }
