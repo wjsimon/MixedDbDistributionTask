@@ -1,19 +1,27 @@
 ﻿using Microsoft.Data.Sqlite;
+using MixedDbDistributionTask.Classes;
 using MixedDbDistributionTask.Data;
-using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Services
 {
     internal class DatabaseCreationService
     {
-        public Dictionary<string, DbIndex> AvailableDatabases = [];
+        private Dictionary<string, DbIndex> _availableDatabases = [];
 
-        public DbIndex CreateMasterDbSafe(string location)
+        public DbIndex MasterIndex => _availableDatabases["master"];
+
+        public bool CreateMasterDbSafe(string location)
             => CreateSafe(location, "master", true);
 
-        public DbIndex CreateTenantDbSafe(string location, string tenantId)
+        public bool CreateTenantDbSafe(string location, string tenantId)
             => CreateSafe(location, tenantId, false);
+
+        public DbIndex GetIndex(string id) =>
+            _availableDatabases[id];
+
+        public bool TryGetIndex(string id, out DbIndex index)
+            => _availableDatabases.TryGetValue(id, out index);
 
         public bool WriteMasterDebugData(DbIndex dbIndex)
         {
@@ -25,7 +33,7 @@ namespace MixedDbDistributionTask.Services
             };
 
             //debug insertions for population
-            DatabaseWriterService.InsertPractices(dbIndex, practices);
+            DatabaseWriter.InsertPractices(dbIndex, practices);
 
             var fixedRemedies = new RemedyDto[]
             {
@@ -34,7 +42,7 @@ namespace MixedDbDistributionTask.Services
                     new RemedyDto() { Diagnosis = "good", Name = "All good buddy", IsFixed = true }
             };
 
-            DatabaseWriterService.InsertRemedies(dbIndex, fixedRemedies);
+            DatabaseWriter.InsertRemedies(dbIndex, fixedRemedies);
 
             var patients = new PatientDto[]
             {
@@ -43,7 +51,7 @@ namespace MixedDbDistributionTask.Services
                     new PatientDto() { KvNummer = "2", PracticeIk = "practice2", Name = "Raphael Schweda", Age = -1 }
             };
 
-            DatabaseWriterService.InsertPatients(dbIndex, patients);
+            DatabaseWriter.InsertPatients(dbIndex, patients);
             return true;
         }
 
@@ -51,10 +59,10 @@ namespace MixedDbDistributionTask.Services
         {
             var therapists = new TherapistDto[]
             {
-                    new TherapistDto() { Id = "therapist1", Name = "Viktor Frankenstein" }
+                new TherapistDto() { Id = "therapist1", Name = "Viktor Frankenstein" }
             };
 
-            DatabaseWriterService.InsertTherapists(dbIndex, therapists);
+            DatabaseWriter.InsertTherapists(dbIndex, therapists);
 
             var appointments = new AppointmentDto[]
             {
@@ -69,21 +77,24 @@ namespace MixedDbDistributionTask.Services
                     }
             };
 
-            DatabaseWriterService.InsertAppointments(dbIndex, appointments);
+            DatabaseWriter.InsertAppointments(dbIndex, appointments);
             return true;
         }
 
-        private DbIndex CreateSafe(string location, string name, bool isMaster)
+        private bool CreateSafe(string location, string name, bool isMaster)
         {
-            var source = MakeSqliteDataSource(location, name);
-            if (File.Exists(source))
+            if (File.Exists(MakeSqliteFileLocation(location, name)))
             {
-                return new DbIndex(source);
+                _availableDatabases.TryAdd(name, new DbIndex(MakeSqliteDataSource(location, name)));
+                return false; 
             }
-            else { return Create(location, name, isMaster); }
+            else 
+            { 
+                return Create(location, name, isMaster); 
+            }
         }
 
-        private DbIndex Create(string location, string name, bool isMaster)
+        private bool Create(string location, string name, bool isMaster)
         {
             DbIndex dbIndex = new DbIndex(MakeSqliteDataSource(location, name));
             using var connection = new SqliteConnection(dbIndex.Source);
@@ -92,11 +103,14 @@ namespace MixedDbDistributionTask.Services
             using var sqlCommand = new SqliteCommand(isMaster ? SqliteSnippetsMaster.Create : SqliteSnippetsTenant.Create, connection);
             sqlCommand.ExecuteNonQuery();
 
-            AvailableDatabases.TryAdd(name, dbIndex);
-            return dbIndex;
+            _availableDatabases.TryAdd(name, dbIndex);
+            return true;
         }
 
         private string MakeSqliteDataSource(string path, string name)
-            => $"Data Source={path}\\{name}.db";
+            => $"Data Source={MakeSqliteFileLocation(path, name)}";
+
+        private string MakeSqliteFileLocation(string path, string name)
+            => $"{path}\\{name}.db";
     }
 }

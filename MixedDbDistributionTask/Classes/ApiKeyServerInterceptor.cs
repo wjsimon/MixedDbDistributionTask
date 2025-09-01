@@ -8,7 +8,7 @@ namespace MixedDbDistributionTask.Classes
         private readonly ILogger _logger;
         private readonly Dictionary<string, string> _validApiKeys = new Dictionary<string, string>()
         {
-            { "ACCESS_TOKEN", "hillsidesumo" }
+            { "ACCESS_TOKEN", "henara" }
         };
 
         public ApiKeyServerInterceptor(ILogger<ApiKeyServerInterceptor> logger)

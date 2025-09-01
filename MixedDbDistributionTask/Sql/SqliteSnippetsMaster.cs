@@ -35,8 +35,10 @@
 
         public const string SelectPractice = @"SELECT * FROM Practice WHERE ik = @ik;";
         public const string SelectPractices = @"SELECT * FROM Practice;";
+        public const string SelectRemedy = @"SELECT * FROM Remedy WHERE diagnosis = @diagnosis;";
         public const string SelectRemedies = @"SELECT * FROM Remedy";
         public const string SelectFixedRemedies = @"SELECT * FROM Remedy WHERE is_fixed_type = 1";
+        public const string SelectPatient = @"SELECT * FROM Patient WHERE kv_nummer = @kv_nummer";
         public const string SelectPatientsForPractice = @"SELECT * FROM Patient, Practice WHERE Patient.practice_ik = Practice.ik AND Practice.ik = @practice_ik";
     }
 }

@@ -1,11 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
 using MixedDbDistributionTask.Data;
-using MixedDbDistributionTask.Shared.Data;
 using MixedDbDistributionTask.Sql;
 
-namespace MixedDbDistributionTask.Services
+namespace MixedDbDistributionTask.Classes
 {
-    internal static class DatabaseWriterService
+    internal static class DatabaseWriter
     {
         public static int InsertPractices(DbIndex dbIndex, params PracticeDto[]? practices)
         {

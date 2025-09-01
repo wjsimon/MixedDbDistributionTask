@@ -27,11 +27,15 @@ namespace MixedDbDistributionTask
 
             if (loc != null)
             {
-                var masterDb = dbcs.CreateMasterDbSafe(loc);
-                var hillsideDb = dbcs.CreateTenantDbSafe(loc, "hillsidesumo");
-
-                //dbcs.WriteMasterDebugData(masterDb);
-                //dbcs.WriteTenantDebugData(hillsideDb);
+                if(dbcs.CreateMasterDbSafe(loc))
+                {
+                    dbcs.WriteMasterDebugData(dbcs.MasterIndex);
+                }
+                
+                if(dbcs.CreateTenantDbSafe(loc, "henara"))
+                {
+                    dbcs.WriteTenantDebugData(dbcs.GetIndex("henara"));
+                }
             }
             else { return; }
 

@@ -10,7 +10,8 @@ service Accessor {
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
 	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
 	rpc GetTherapist(TherapistRequest) returns (TherapistReply);
-	rpc GetAppointmentForPatientAtPractice(AppointmentRequest) returns (AppointmentReply);
+	rpc GetAppointmentsForPatientAtPractice(AppointmentRequest) returns (AppointmentReply);
+	rpc GetAppointmentsForTherapist (AppointmentRequest) returns (AppointmentReply);
 }
 
 message PingRequest {
@@ -90,8 +91,9 @@ message AppointmentDto {
 message AppointmentRequest {
 	string patientKv = 1;
 	string practiceIk = 2;
+	string therapistId = 3;
 }
 
 message AppointmentReply {
-	AppointmentDto appointment = 1;
+	repeated AppointmentDto appointments = 1;
 }

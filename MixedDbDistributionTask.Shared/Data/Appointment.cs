@@ -1,9 +1,9 @@
 ﻿namespace MixedDbDistributionTask.Shared.Data
 {
-    public record struct Appointment(
+    public readonly record struct Appointment(
         string Id,
         DateTime StartTime,
-        DateTime Endtime,
+        DateTime EndTime,
         Therapist Therapist,
         Patient Patient,
         Practice Practice,
