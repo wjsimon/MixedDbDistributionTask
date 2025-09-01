@@ -1,5 +1,4 @@
 ﻿using Grpc.Core;
-using System.Runtime.CompilerServices;
 
 namespace MixedDbDistributionGrpcClient
 {
