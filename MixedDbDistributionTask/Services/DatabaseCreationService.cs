@@ -21,6 +21,9 @@ namespace MixedDbDistributionTask.Services
         public DbIndex GetIndex(string id) =>
             _availableDatabases[id];
 
+        public string[] GetAvailableDatabases()
+            => _availableDatabases.Keys.ToArray();
+
         public bool TryGetIndex(string id, out DbIndex index)
             => _availableDatabases.TryGetValue(id, out index);
 

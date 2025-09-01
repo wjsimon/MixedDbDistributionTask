@@ -9,6 +9,18 @@ namespace MixedDbDistributionTask
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(name: "_myAllowSpecificOrigins",
+                                  policy =>
+                                  {
+                                      policy.WithOrigins("https://localhost:7195")
+                                          .AllowCredentials()
+                                          .AllowAnyHeader()
+                                          .AllowAnyMethod();
+                                  });
+            });
+
             builder.Services.AddAuthentication();
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
@@ -41,10 +53,12 @@ namespace MixedDbDistributionTask
 
             app.UseRouting();
 
+            app.UseCors("_myAllowSpecificOrigins");
+            app.UseGrpcWeb();
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapGrpcService<AccessorService>();
+            app.MapGrpcService<AccessorService>().EnableGrpcWeb();
             app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
             app.Run();

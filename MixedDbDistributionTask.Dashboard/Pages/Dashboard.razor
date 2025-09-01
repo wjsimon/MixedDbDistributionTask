@@ -1,0 +1,41 @@
+﻿@page "/"
+
+@using MixedDbDistributionTask.Dashboard.ViewModels
+
+@implements IDisposable
+@inject DashboardViewModel ViewModel
+
+<div class="w-100 h-100 flex flex-column justify-content-center align-items-center">
+    <span>Hey, there! :)</span>
+
+    @if (!ViewModel.MasterAvailable)
+    {
+        <div class="flex flex-column justify-content-center">
+            <span>No master database seems to have been created. Create a new master database now?</span>
+            <button @onclick="CreateMasterDatabase">Go!</button>
+        </div>
+    }
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
+    }
+
+    public void Dispose()
+    {
+        ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
+    }
+
+    private async Task<bool> CreateMasterDatabase()
+    {
+        return await ViewModel.CreateMasterDatabase();
+    }
+
+    private void HandleDatabaseAvailabilityChanged(object? sender, EventArgs args)
+    {
+        InvokeAsync(StateHasChanged); //precaution for the "under discussion" multi-threaded blazor WASM; not needed as now
+    }
+}
