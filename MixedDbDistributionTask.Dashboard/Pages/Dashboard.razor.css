@@ -1,0 +1,10 @@
+﻿/* color are all ripped bs5 colors */
+
+.mylink:hover {
+    color: #6ea8fe;
+    cursor: pointer;
+}
+
+.mylink:active {
+    color: #0d6efd;
+}
