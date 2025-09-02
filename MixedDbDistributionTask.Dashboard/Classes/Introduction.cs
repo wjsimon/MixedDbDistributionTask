@@ -69,7 +69,8 @@ namespace MixedDbDistributionTask.Dashboard.Classes
             var selection = (int)_args[3];
             if (selection > 0) 
             {
-                await _dashboardViewModel.GenerateDebugData(selection);
+                var tenants = ((string)_args[2]).Split(',');
+                await _dashboardViewModel.GenerateDebugData(selection, tenants);
             }
 
             Completed?.Invoke(this, EventArgs.Empty);

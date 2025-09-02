@@ -61,7 +61,7 @@ else if (Introduction.Stage == 3)
 
         <span>I will now generate some debug data for you.</span>
         <div class="d-flex flex-column justify-content-center gap-4">
-            <button @onclick="(e) => Introduction.Advance(4)">Cool!</button>
+            <button @onclick="(e) => Introduction.Advance(3)">Cool!</button>
         </div>
     </div>
 
@@ -83,20 +83,6 @@ else if (Introduction.IsCompleted)
 
     private int _checkBoxSelection = 0;
     private string _tenantCreationIds = string.Empty;
-
-    // private void HandleDebugDataCreation(bool create)
-    // {
-    //     ViewModel.DismissDebugDataPrompt();
-
-    //     if (create)
-    //     {
-    //         Task.Run(async () =>
-    //         {
-    //             await ViewModel.GenerateDebugData(1);
-    //             await InvokeAsync(StateHasChanged);
-    //         });
-    //     }
-    // }
 
     private void HandleCheckbox(int pos, ChangeEventArgs args)
     {

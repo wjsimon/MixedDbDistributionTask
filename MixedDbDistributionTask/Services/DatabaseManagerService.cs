@@ -32,7 +32,7 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new DatabaseCreationReply();
 
-            if (!_dbcs.MasterAvailable) 
+            if (!_dbcs.MasterAvailable)
             {
                 var loc = _configuration["ConnectionStrings:SqliteMasterDeb"];
                 if (loc == null) { throw new Exception("Server configuration invalid. No sqlite connection string present."); }
@@ -72,9 +72,12 @@ namespace MixedDbDistributionTask.Services
 
             if ((request.Selection & (1 << 1)) != 0)
             {
-                if (_dbcs.TryGetIndex(request.TenantId, out DbIndex tenantIndex))
+                foreach (var tenantId in request.Tenants)
                 {
-                    _dbcs.GenerateTenantDebugData(tenantIndex);
+                    if (_dbcs.TryGetIndex(tenantId, out DbIndex tenantIndex))
+                    {
+                        _dbcs.GenerateTenantDebugData(tenantIndex);
+                    }
                 }
             }
 

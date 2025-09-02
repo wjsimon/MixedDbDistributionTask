@@ -1,6 +1,7 @@
 ﻿@page "/"
 
 @using MixedDbDistributionTask.Dashboard.ViewModels
+@using System.Text.Json
 
 @implements IDisposable
 @inject DashboardViewModel ViewModel
@@ -62,7 +63,9 @@
                                 <span>@ViewModel.LastQuery</span>
                             </div>
                             <div>
-                                <span>@ViewModel.LastQueryResult</span>
+                                <span>
+                                    @ViewModel.LastQueryResult
+                                </span>
                             </div>
                         </div>
                     }
@@ -79,8 +82,8 @@
     protected override void OnInitialized()
     {
         ViewModel.InitialLoadCompleted += HandleInitialLoadComplete;
-        ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
         ViewModel.Introduction.Completed += HandleIntroductionCompleted;
+        ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
     }
 
     public void Dispose()
@@ -88,20 +91,6 @@
         ViewModel.InitialLoadCompleted -= HandleInitialLoadComplete;
         ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
         ViewModel.Introduction.Completed -= HandleIntroductionCompleted;
-    }
-
-    private void HandleDebugDataCreation(bool create)
-    {
-        ViewModel.DismissDebugDataPrompt();
-
-        if (create)
-        {
-            Task.Run(async () =>
-            {
-                await ViewModel.GenerateDebugData(1);
-                await InvokeAsync(StateHasChanged);
-            });
-        }
     }
 
     private void HandleInitialLoadComplete(object? sender, EventArgs args)

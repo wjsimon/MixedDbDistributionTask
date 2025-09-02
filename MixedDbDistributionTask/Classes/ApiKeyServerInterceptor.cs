@@ -27,7 +27,8 @@ namespace MixedDbDistributionTask.Classes
             {
                 var key = context.RequestHeaders.Get("api-key");
 
-                if (key == null && context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method
+                //no api key required
+                if (context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method?
                 {
                     return await continuation(request, context);
                 }

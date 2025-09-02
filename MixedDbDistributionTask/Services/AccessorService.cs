@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using MixedDbDistributionTask.Classes;
 using MixedDbDistributionTask.Data;
+using static MixedDbDistributionTask.Classes.ApiAllowance;
 
 namespace MixedDbDistributionTask.Services
 {
@@ -25,10 +26,10 @@ namespace MixedDbDistributionTask.Services
         public override Task<PracticesReply> GetPractices(PracticesRequest request, ServerCallContext context)
         {
             var reply = new PracticesReply();
-
-            if (_dbcs.TryGetIndex("master", out DbIndex index))
+            if (AllowGlobal(_dbcs, context, out DbIndex? master))
             {
-                reply.Practices.AddRange(DatabaseReader.GetPractices(index));
+                if (master == null) { throw new Exception("something went VERY wrong"); }
+                reply.Practices.AddRange(DatabaseReader.GetPractices((DbIndex)master));
             }
 
             return Task.FromResult(reply);
@@ -37,10 +38,11 @@ namespace MixedDbDistributionTask.Services
         public override Task<RemedyReply> GetRemedies(RemedyRequest request, ServerCallContext context)
         {
             var reply = new RemedyReply();
-            
-            if (_dbcs.TryGetIndex("master", out DbIndex master))
+
+            if (AllowPublic(_dbcs, context, out DbIndex? master))
             {
-                var fixedRemedies = DatabaseReader.GetFixedRemedies(master);
+                if (master == null) { throw new Exception("something went VERY wrong"); }
+                var fixedRemedies = DatabaseReader.GetFixedRemedies((DbIndex)master);
                 reply.Remedies.AddRange(fixedRemedies.Select(r => new RemedyDto() { Diagnosis = r.Diagnosis, Name = r.Name, IsFixed = r.IsFixed }));
 
                 if (!request.FixedOnly && _dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb))
@@ -56,9 +58,10 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new PatientReply();
 
-            if (_dbcs.TryGetIndex("master", out DbIndex master))
+            if (AllowGlobal(_dbcs, context, out DbIndex? master))
             {
-                reply.Patients.AddRange(DatabaseReader.GetPatients(master, request.PracticeIk));
+                if (master == null) { throw new Exception("something went VERY wrong"); }
+                reply.Patients.AddRange(DatabaseReader.GetPatients((DbIndex)master, request.PracticeIk));
             }
 
             return Task.FromResult(reply);
@@ -68,7 +71,7 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new AppointmentReply();
 
-            if (_dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
+            if (AllowLocal(_dbcs, context, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
                 reply.Appointments.AddRange(
                     DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, tenantDb, request.PatientKv, request.PracticeIk));
@@ -81,7 +84,7 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new AppointmentReply();
 
-            if (_dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
+            if (AllowLocal(_dbcs, context, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
                 reply.Appointments.AddRange(
                     DatabaseReader.GetAppointmentsForTherapist(_dbcs.MasterIndex, tenantDb, request.TherapistId));

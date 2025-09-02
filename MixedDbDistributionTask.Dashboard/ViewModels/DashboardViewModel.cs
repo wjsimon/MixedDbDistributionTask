@@ -1,4 +1,5 @@
-﻿using MixedDbDistribution.Dashboard;
+﻿using Google.Protobuf.WellKnownTypes;
+using MixedDbDistribution.Dashboard;
 using MixedDbDistributionTask.Dashboard.Classes;
 using System.Collections.Immutable;
 
@@ -12,7 +13,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         {
             _accessorClient = accessorClient;
             _dbManagerClient = dbManagerClient;
-            
+
             _introduction = new(this);
 
             _ = LoadDatabaseAvailability(); //together with non-nullable intro, this leads to a flicker everytime the app starts :(    (loadinitialdata event structure to prevent)
@@ -21,6 +22,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         private readonly Accessor.AccessorClient _accessorClient;
         private readonly DatabaseManager.DatabaseManagerClient _dbManagerClient;
         
+        //any way to automatically resolve these?
         private readonly ImmutableArray<string> _availableQueries = [
             "fixed-remedies",
             "practices",
@@ -37,12 +39,13 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         private string? _selectedDatabase = null;
         private string? _lastQuery = null;
         private string? _lastQueryResult = null;
+        private string? _lastQueryResultFormatted = null;
 
         private ImmutableArray<string> _availableTenants = [];
 
         public event EventHandler? InitialLoadCompleted;
         public event EventHandler? DatabaseAvailabilityChanged;
-        public event EventHandler<string?>? DatabaseSelected;
+        public event EventHandler<string?>? DatabaseSelectionChanged;
 
         public bool ServiceReady => _fistLoadCompleted;
         public bool MasterAvailable => _masterAvailable;
@@ -55,6 +58,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         public string? ApiKey { get; set; }
         public string? LastQuery => _lastQuery;
         public string? LastQueryResult => _lastQueryResult;
+        public string? LastQueryResultFormatted => _lastQueryResultFormatted;
 
         public bool HasSelection => _selectedDatabase != null;
         public bool HasQueryResult => _lastQueryResult != null;
@@ -77,9 +81,12 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             return true;
         }
 
-        public async Task<bool> GenerateDebugData(int selection)
+        public async Task<bool> GenerateDebugData(int selection, string[] tenants)
         {
-            var reply = await _dbManagerClient.GenerateDebugDataAsync(new GenerationRequest() { Selection = selection });
+            var request = new GenerationRequest() { Selection = selection };
+            request.Tenants.AddRange(tenants);
+
+            var reply = await _dbManagerClient.GenerateDebugDataAsync(request);
             return true;
         }
 
@@ -101,7 +108,8 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                     _selectedDatabase = dbKey;
                 }
 
-                DatabaseSelected?.Invoke(this, _selectedDatabase);
+                ResetQuery();
+                DatabaseSelectionChanged?.Invoke(this, _selectedDatabase);
             }
         }
 
@@ -109,9 +117,17 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             //api call
             if (queryIndex-1 > _availableQueries.Length) { return; }
 
-            string query = _availableQueries[queryIndex];
-            _lastQuery = query;
-            _lastQueryResult = "result";
+            _lastQuery = _availableQueries[queryIndex];
+            if (_lastQuery == "fixed-remedies")
+            {
+                var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
+                _lastQueryResult = reply.ToString();
+            }
+            else
+            {
+                _lastQuery = null;
+                _lastQueryResult = null; 
+            }
         }
 
         public bool IsDatabaseSelected(string dbKey) 
@@ -138,6 +154,13 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             }
 
             DatabaseAvailabilityChanged?.Invoke(this, EventArgs.Empty); //this also invokes a re-render for the intro... not the best communication but works for now
+        }
+
+        private void ResetQuery()
+        {
+            _lastQuery = null;
+            _lastQueryResult = null;
+            _lastQueryResultFormatted = null;
         }
     }
 }

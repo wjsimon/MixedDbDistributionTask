@@ -6,6 +6,7 @@ using MixedDbDistributionTask.Sql;
 
 namespace MixedDbDistributionTask.Services
 {
+    //since this is for administration purposes only, no allowance checks are made; this is available globally
     internal class DatabaseCreationService
     {
         public DatabaseCreationService(IConfiguration configuration)
@@ -35,6 +36,9 @@ namespace MixedDbDistributionTask.Services
 
         public bool TryGetIndex(string id, out DbIndex index)
             => _availableDatabases.TryGetValue(id, out index);
+
+        public bool TenantValid(string tenantId)
+            => _availableDatabases.ContainsKey(tenantId);
 
         public bool GenerateMasterDebugData(DbIndex dbIndex)
         {
@@ -132,7 +136,7 @@ namespace MixedDbDistributionTask.Services
                 if (IsSqliteDb(path))
                 {
                     var key = path.Split('\\').Last().Split('.').First();
-                    _availableDatabases.Add(key, new DbIndex(path));
+                    _availableDatabases.Add(key, new DbIndex(MakeSqliteDataSource(path)));
                 }
             }
         }
@@ -164,6 +168,9 @@ namespace MixedDbDistributionTask.Services
 
             return result;
         }
+
+        private string MakeSqliteDataSource(string path)
+            => $"Data Source={path}";
 
         private string MakeSqliteDataSource(string path, string name)
             => $"Data Source={MakeSqliteFileLocation(path, name)}";
