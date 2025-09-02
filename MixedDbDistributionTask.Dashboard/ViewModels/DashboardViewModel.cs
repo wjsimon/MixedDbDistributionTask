@@ -20,19 +20,43 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
         private readonly Accessor.AccessorClient _accessorClient;
         private readonly DatabaseManager.DatabaseManagerClient _dbManagerClient;
+        
+        private readonly ImmutableArray<string> _availableQueries = [
+            "fixed-remedies",
+            "practices",
+            "patients-for-a-practice",
+            "appointments-for-a-patient-for-a-practice",
+            "appointments-for-a-therapist"
+        ];
 
         private bool _masterAvailable = false;
+        private bool _fistLoadCompleted = false;
         private int _showDebugDataPrompt = 0;
         private Introduction _introduction;
 
+        private string? _selectedDatabase = null;
+        private string? _lastQuery = null;
+        private string? _lastQueryResult = null;
+
         private ImmutableArray<string> _availableTenants = [];
 
+        public event EventHandler? InitialLoadCompleted;
         public event EventHandler? DatabaseAvailabilityChanged;
+        public event EventHandler<string?>? DatabaseSelected;
 
+        public bool ServiceReady => _fistLoadCompleted;
         public bool MasterAvailable => _masterAvailable;
         public int ShowDebugDataPrompt => _showDebugDataPrompt;
         public Introduction Introduction => _introduction;
         public ImmutableArray<string> AvailableTenants => _availableTenants;
+
+        public string? SelectedDatabase => _selectedDatabase;
+        public ImmutableArray<string> AvailableQueries => _availableQueries; //load from backend!
+        public string? LastQuery => _lastQuery;
+        public string? LastQueryResult => _lastQueryResult;
+
+        public bool HasSelection => _selectedDatabase != null;
+        public bool HasQueryResult => _lastQueryResult != null;
 
         public async Task<bool> CreateMasterDatabase()
         {
@@ -63,6 +87,38 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             _showDebugDataPrompt = 0;
         }
 
+        public void SelectDatabase(string dbKey)
+        {
+            if (_availableTenants.Contains(dbKey))
+            {
+                if (_selectedDatabase == dbKey)
+                {
+                    _selectedDatabase = null;
+                }
+                else
+                {
+                    _selectedDatabase = dbKey;
+                }
+
+                DatabaseSelected?.Invoke(this, _selectedDatabase);
+            }
+        }
+
+        public async Task RequestQuery(int queryIndex) {
+            //api call
+            if (queryIndex-1 > _availableQueries.Length) { return; }
+
+            string query = _availableQueries[queryIndex];
+            _lastQuery = query;
+            _lastQueryResult = "result";
+        }
+
+        public bool IsDatabaseSelected(string dbKey) 
+            => dbKey == _selectedDatabase;
+
+        public bool IsQuerySelected(string query)
+            => query == _lastQuery && _lastQueryResult != null;
+
         private async Task LoadDatabaseAvailability()
         {
             var availability = await _dbManagerClient.GetDatabaseAvailabilityAsync(new DatabasesRequest());
@@ -72,6 +128,12 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             if (!MasterAvailable)
             {
                 _introduction = new(this);
+            }
+
+            if (!_fistLoadCompleted)
+            {
+                _fistLoadCompleted = true;
+                InitialLoadCompleted?.Invoke(this, EventArgs.Empty);
             }
 
             DatabaseAvailabilityChanged?.Invoke(this, EventArgs.Empty); //this also invokes a re-render for the intro... not the best communication but works for now

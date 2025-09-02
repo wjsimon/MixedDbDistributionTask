@@ -4,47 +4,86 @@
 
 @implements IDisposable
 @inject DashboardViewModel ViewModel
-
 <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
-    <div class="w-50 d-flex flex-column justify-content-center align-items-center">
-        <span class="mb-4">Hey, there! :)</span>
-        @*         <div class="w-75 mb-4" style="border-bottom: 1px solid #888888;"></div> *@
-    </div>
-
-    @if (ViewModel.Introduction == null)
+    @if (!ViewModel.ServiceReady)
     {
-        
-    }
-    else if (_showIntroduction)
-    {
-        <Intro Introduction="ViewModel.Introduction"/>
+        <div class="spinner-border text-primary" role="status" style="font-size: 5rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     }
     else
     {
-        <div class="d-flex flex-column gap-2">
-            @foreach (var tenant in ViewModel.AvailableTenants)
-            {
-                <span class="mylink">@tenant</span>
-            }
+        <div class="w-50 d-flex flex-column justify-content-center align-items-center">
+            <span class="mb-4">Hey, there! :)</span>
+            @*         <div class="w-75 mb-4" style="border-bottom: 1px solid #888888;"></div> *@
         </div>
+
+        @if (ViewModel.Introduction == null)
+        {
+
+        }
+        else if (_showIntroduction)
+        {
+            <Intro Introduction="ViewModel.Introduction" />
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-2">
+                <div class="d-flex flex-row gap-4">
+                    @foreach (var tenant in ViewModel.AvailableTenants)
+                    {
+                        <span class="mylink @(GetLinkSelectedCss(tenant))" @onclick="() => ViewModel.SelectDatabase(tenant)">@tenant</span>
+                    }
+                </div>
+                <div class="d-flex flex-row gap-4">
+                    @if (ViewModel.HasSelection)
+                    {
+                        <div class="d-flex flex-column flex-grow-1 justify-content-center align-items-start border p-2">
+                            <span style="margin-bottom: 2rem;">@ViewModel.SelectedDatabase selected!</span>
+                            <div class="d-flex flex-column gap-1">
+                                @foreach (var query in ViewModel.AvailableQueries.Select((value, i) => new { i, value })) @* because for loops are still "bugged" (probably intended behaviour) *@
+                                {
+                                    <span class="querylink @(GetQuerySelectedCss(query.value))" @onclick="() => ViewModel.RequestQuery(query.i)">@query.value</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (ViewModel.HasQueryResult)
+                    {
+                        @* fix layout! *@
+                        <div class="d-flex flex-column flex-grow-1 gap-1 p-2 border">
+                            <div class="d-flex flex-row gap-2 border-bottom">
+                                <span>@ViewModel.SelectedDatabase</span>
+                                <span>-</span>
+                                <span>@ViewModel.LastQuery</span>
+                            </div>
+                            <div>
+                                <span>@ViewModel.LastQueryResult</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
     }
 </div>
 
 @code {
+    private const string LINK_SELECTED_CSS = "selected";
     private bool _showIntroduction = false;
 
     protected override void OnInitialized()
     {
+        ViewModel.InitialLoadCompleted += HandleInitialLoadComplete;
         ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
         ViewModel.Introduction.Completed += HandleIntroductionCompleted;
-
-        if (!ViewModel.Introduction.IsCompleted) { _showIntroduction = true; };
     }
 
     public void Dispose()
     {
+        ViewModel.InitialLoadCompleted -= HandleInitialLoadComplete;
         ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
-        ViewModel.Introduction?.Completed -= HandleIntroductionCompleted;
+        ViewModel.Introduction.Completed -= HandleIntroductionCompleted;
     }
 
     private void HandleDebugDataCreation(bool create)
@@ -60,6 +99,18 @@
             });
         }
     }
+
+    private void HandleInitialLoadComplete(object? sender, EventArgs args)
+    {
+        _showIntroduction = !ViewModel.MasterAvailable;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetLinkSelectedCss(string tenant)
+        => ViewModel.IsDatabaseSelected(tenant) ? LINK_SELECTED_CSS : string.Empty;
+
+    private string GetQuerySelectedCss(string query)
+        => ViewModel.IsQuerySelected(query) ? LINK_SELECTED_CSS : string.Empty;
 
     private void HandleIntroductionCompleted(object? sender, EventArgs args)
     {

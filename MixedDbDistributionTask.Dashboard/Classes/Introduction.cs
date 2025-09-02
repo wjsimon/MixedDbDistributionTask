@@ -7,7 +7,7 @@ namespace MixedDbDistributionTask.Dashboard.Classes
         private readonly DashboardViewModel _dashboardViewModel = dashboardViewModel;
 
         private int _stage = 0;
-        private object[] _args = new object[3];
+        private object[] _args = new object[4];
 
         public bool Show { get; set; }
         public int Stage => _stage;

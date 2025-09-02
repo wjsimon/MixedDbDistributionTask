@@ -8,6 +8,14 @@ namespace MixedDbDistributionTask.Services
 {
     internal class DatabaseCreationService
     {
+        public DatabaseCreationService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+
+            CheckForDatabases();
+        }
+
+        private readonly IConfiguration _configuration;
         private Dictionary<string, DbIndex> _availableDatabases = [];
 
         public DbIndex MasterIndex => _availableDatabases["master"];
@@ -110,6 +118,51 @@ namespace MixedDbDistributionTask.Services
 
             _availableDatabases.TryAdd(name, dbIndex);
             return true;
+        }
+
+        private void CheckForDatabases()
+        {
+            var loc = _configuration["ConnectionStrings:SqliteMasterDeb"];
+            if (loc == null) { return; } //throw instead?
+
+            var paths = CollectDatabases(loc);
+
+            foreach (var path in paths)
+            {
+                if (IsSqliteDb(path))
+                {
+                    var key = path.Split('\\').Last().Split('.').First();
+                    _availableDatabases.Add(key, new DbIndex(path));
+                }
+            }
+        }
+
+        private string[] CollectDatabases(string location)
+        {
+            var candidates = Directory.GetFiles(location, "*.db");
+            return candidates;
+        }
+
+        private static bool IsSqliteDb(string pathToFile) //yes, you can spoof a false-positive here
+        {
+            bool result = false;
+            if (File.Exists(pathToFile))
+            {
+                using (FileStream stream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    byte[] header = new byte[16];
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        header[i] = (byte)stream.ReadByte();
+                    }
+
+                    result = System.Text.Encoding.UTF8.GetString(header).Contains("SQLite format 3");
+                    stream.Close();
+                }
+            }
+
+            return result;
         }
 
         private string MakeSqliteDataSource(string path, string name)

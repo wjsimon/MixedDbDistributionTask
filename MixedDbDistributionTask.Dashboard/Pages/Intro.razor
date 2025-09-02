@@ -9,11 +9,18 @@
 }
 else if (Introduction.Stage == 1)
 {
-    <div class="flex flex-column justify-content-center">
+    @*     <div class="flex flex-column justify-content-center">
         <span>Would you also like to generate a tenant right away?</span>
         <div class="flex flex-row justify-content-center gap-4">
             <button @onclick="(e) => Introduction.Advance(true)">Yes!</button>
             <button @onclick="(e) => Introduction.Skip(false, 1)">No!</button>
+        </div>
+    </div> *@
+    <div class="flex flex-column justify-content-center">
+        <span>You also need at least one tenant. Are you ready?</span>
+        <div class="flex flex-row justify-content-center gap-4">
+            <button @onclick="(e) => Introduction.Advance(true)">Yes! :)</button>
+            <button @onclick="(e) => Introduction.Advance(true)">Yes! :D</button>
         </div>
     </div>
 }
@@ -21,6 +28,7 @@ else if (Introduction.Stage == 2)
 {
     <div class="d-flex flex-column justify-content-center gap-4">
         <span>Enter tenant's names to create a database for, separated by commas (and not using any whitespace) :D</span>
+        <span style="font-size: 0.75rem; color: dimgray">If you enter anything invalid the backend will sadly explode.</span>
         <input type="text" @bind-value="_tenantCreationIds" />
         <button @onclick="(e) => Introduction.Advance(_tenantCreationIds)">Looks good!</button>
     </div>
@@ -28,7 +36,7 @@ else if (Introduction.Stage == 2)
 else if (Introduction.Stage == 3)
 {
     <div class="d-flex flex-column justify-content-center align-items-center">
-        <span>Would you also like to generate some debug data? :)</span>
+        @*         <span>Would you also like to generate some debug data? :)</span>
         <span>You can also generate more data later.</span>
         <div class="d-flex flex-column justify-content-center gap-4">
             @if (!(bool)Introduction[1])
@@ -49,14 +57,24 @@ else if (Introduction.Stage == 3)
                 <button @onclick="(e) => Introduction.Advance(_checkBoxSelection)">Looks good!</button>
             }
             <button @onclick="(e) => Introduction.Advance(0)">No!</button>
+        </div>*@
+
+        <span>I will now generate some debug data for you.</span>
+        <div class="d-flex flex-column justify-content-center gap-4">
+            <button @onclick="(e) => Introduction.Advance(4)">Cool!</button>
         </div>
     </div>
+
 }
 else if (Introduction.IsCompleted)
 {
-    <div class="d-flex flex-column justify-content-center align-items-center">
+@*     <div class="d-flex flex-column justify-content-center align-items-center">
         <span>All set! :)</span>
         <span>Processing your selection now...</span>
+    </div> *@
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <span>All set! :)</span>
+        <span>Processing databases now...</span>
     </div>
 }
 
