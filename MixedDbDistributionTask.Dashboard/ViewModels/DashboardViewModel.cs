@@ -52,6 +52,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
         public string? SelectedDatabase => _selectedDatabase;
         public ImmutableArray<string> AvailableQueries => _availableQueries; //load from backend!
+        public string? ApiKey { get; set; }
         public string? LastQuery => _lastQuery;
         public string? LastQueryResult => _lastQueryResult;
 
