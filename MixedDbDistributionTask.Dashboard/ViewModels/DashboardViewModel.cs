@@ -1,7 +1,7 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using MixedDbDistribution.Dashboard;
+﻿using MixedDbDistribution.Dashboard;
 using MixedDbDistributionTask.Dashboard.Classes;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 
 namespace MixedDbDistributionTask.Dashboard.ViewModels
 {
@@ -9,7 +9,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
     {
         public DashboardViewModel(
             Accessor.AccessorClient accessorClient,
-            DatabaseManager.DatabaseManagerClient dbManagerClient) 
+            DatabaseManager.DatabaseManagerClient dbManagerClient)
         {
             _accessorClient = accessorClient;
             _dbManagerClient = dbManagerClient;
@@ -21,15 +21,23 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
         private readonly Accessor.AccessorClient _accessorClient;
         private readonly DatabaseManager.DatabaseManagerClient _dbManagerClient;
-        
+
+        private const string QUERY_FIXED_REMEDIES = "fixed-remedies";
+        private const string QUERY_PRACTICES = "practices";
+        private const string QUERY_PFORP = "patients-for-a-practice";
+        private const string QUERY_APPOINTMENTS_PFORP = "appointments-for-a-patient-for-a-practice";
+        private const string QUERY_APPOINTMENTS_THERAPIST = "appointments-for-a-therapist";
+
         //any way to automatically resolve these?
-        private readonly ImmutableArray<string> _availableQueries = [
-            "fixed-remedies",
-            "practices",
-            "patients-for-a-practice",
-            "appointments-for-a-patient-for-a-practice",
-            "appointments-for-a-therapist"
-        ];
+        private ReadOnlyDictionary<string, QueryInfo> _availableQueries = new ReadOnlyDictionary<string, QueryInfo>(
+            new Dictionary<string, QueryInfo>()
+            {
+                { QUERY_FIXED_REMEDIES, new QueryInfo(QUERY_FIXED_REMEDIES, [], QueryInfoScope.Master) },
+                { QUERY_PRACTICES, new QueryInfo(QUERY_PRACTICES, [], QueryInfoScope.Master) },
+                { QUERY_PFORP, new QueryInfo(QUERY_PFORP, ["practiceIk"], QueryInfoScope.Master) },
+                { QUERY_APPOINTMENTS_PFORP, new QueryInfo(QUERY_APPOINTMENTS_PFORP, ["patientKv", "practiceIk"], QueryInfoScope.Tenant) },
+                { QUERY_APPOINTMENTS_THERAPIST, new QueryInfo(QUERY_APPOINTMENTS_THERAPIST, ["therapistId"], QueryInfoScope.Tenant) }
+            });
 
         private bool _masterAvailable = false;
         private bool _fistLoadCompleted = false;
@@ -37,6 +45,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         private Introduction _introduction;
 
         private string? _selectedDatabase = null;
+        private string? _selectedQuery = null;
         private string? _lastQuery = null;
         private string? _lastQueryResult = null;
         private string? _lastQueryResultFormatted = null;
@@ -46,6 +55,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         public event EventHandler? InitialLoadCompleted;
         public event EventHandler? DatabaseAvailabilityChanged;
         public event EventHandler<string?>? DatabaseSelectionChanged;
+        public event EventHandler<int>? SelectedQueryParametersRequired;
 
         public bool ServiceReady => _fistLoadCompleted;
         public bool MasterAvailable => _masterAvailable;
@@ -54,13 +64,20 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         public ImmutableArray<string> AvailableTenants => _availableTenants;
 
         public string? SelectedDatabase => _selectedDatabase;
-        public ImmutableArray<string> AvailableQueries => _availableQueries; //load from backend!
-        public string? ApiKey { get; set; }
+        public string? ApiKey //teehee
+        { 
+            get { return ClientTokenProvider.Token; }
+            set { ClientTokenProvider.Token = value; } 
+        }
+
+        public string? SelectedQuery => _selectedQuery;
+        public string[] RequiredQueryParameters => GetRequiredQueryParamsSafe();
         public string? LastQuery => _lastQuery;
         public string? LastQueryResult => _lastQueryResult;
         public string? LastQueryResultFormatted => _lastQueryResultFormatted;
 
         public bool HasSelection => _selectedDatabase != null;
+        public bool HasQuerySelection => _selectedQuery != null;
         public bool HasQueryResult => _lastQueryResult != null;
 
         public async Task<bool> CreateMasterDatabase()
@@ -108,26 +125,41 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                     _selectedDatabase = dbKey;
                 }
 
-                ResetQuery();
+                _selectedQuery = null;
+
+                ResetLastQuery();
                 DatabaseSelectionChanged?.Invoke(this, _selectedDatabase);
             }
         }
 
-        public async Task RequestQuery(int queryIndex) {
-            //api call
-            if (queryIndex-1 > _availableQueries.Length) { return; }
 
-            _lastQuery = _availableQueries[queryIndex];
-            if (_lastQuery == "fixed-remedies")
+        public async Task SelectQuery(string query)
+        {
+            if (!_availableQueries.ContainsKey(query)) { return; }
+
+            _selectedQuery = query;
+            if (_availableQueries[_selectedQuery].ParamIds.Length == 0)
             {
-                var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
-                _lastQueryResult = reply.ToString();
+                await RequestQuery(_selectedQuery, []);
             }
             else
             {
-                _lastQuery = null;
-                _lastQueryResult = null; 
+                ResetLastQuery();
+                SelectedQueryParametersRequired?.Invoke(this, _availableQueries[_selectedQuery].ParamIds.Length);
             }
+        }
+
+        public string[] GetAvailableQueriesForSelection() { 
+            if (_selectedDatabase == null) { return []; }
+            return GetAvailableQueries(_selectedDatabase);
+        }
+
+        public async Task RequestSelectedQuery(string?[] paramValues)
+        {
+            if (_selectedQuery == null) { return; }
+            if (paramValues.Length != _availableQueries[_selectedQuery].ParamIds.Length) { return; }
+
+            await RequestQuery(_selectedQuery, paramValues);
         }
 
         public bool IsDatabaseSelected(string dbKey) 
@@ -156,7 +188,76 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             DatabaseAvailabilityChanged?.Invoke(this, EventArgs.Empty); //this also invokes a re-render for the intro... not the best communication but works for now
         }
 
-        private void ResetQuery()
+        private string[] GetAvailableQueries(string dbName)
+        {
+            if (!_availableTenants.Contains(dbName)) { return []; }
+
+            if (dbName == "master") 
+            {
+                return _availableQueries.Values.Where(qi => qi.Scope == QueryInfoScope.Master).Select(qi => qi.Id).ToArray();
+            }
+            else
+            {
+                return _availableQueries.Values.Where(qi => qi.Scope == QueryInfoScope.Tenant).Select(qi => qi.Id).ToArray();
+            }
+        }
+
+        private async Task RequestQuery(string query, string?[] paramValues)
+        {
+            if (!_availableQueries.ContainsKey(query)) { return; }
+
+            _lastQuery = query;
+            if (_lastQuery == QUERY_FIXED_REMEDIES)
+            {
+                var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
+                _lastQueryResult = reply.ToString();
+            }
+            else if (_lastQuery == QUERY_PRACTICES)
+            {
+                var reply = await _accessorClient.GetPracticesAsync(new PracticesRequest());
+                _lastQueryResult = reply.ToString();
+            }
+            else if (_lastQuery == QUERY_PFORP)
+            {
+                var reply = await _accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = paramValues[0] });
+                _lastQueryResult = reply.ToString();
+            }
+            else if (_lastQuery == QUERY_APPOINTMENTS_PFORP)
+            {
+                var reply = await _accessorClient.GetAppointmentsForPatientAtPracticeAsync(
+                    new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1] });
+
+                _lastQueryResult = reply.ToString();
+            }
+            else if (_lastQuery == QUERY_APPOINTMENTS_THERAPIST)
+            {
+                var reply = await _accessorClient.GetAppointmentsForTherapistAsync(
+                    new AppointmentRequest() { TherapistId = paramValues[0] });
+
+                _lastQueryResult = reply.ToString();
+            }
+            else
+            {
+                _lastQuery = null;
+                _lastQueryResult = null;
+            }
+        }
+
+        private string[] GetRequiredQueryParamsSafe()
+        {
+            if (_selectedQuery == null) { return []; }
+
+            if (_availableQueries.TryGetValue(_selectedQuery, out QueryInfo queryInfo))
+            {
+                return queryInfo.ParamIds;
+            }
+            else 
+            {
+                return []; 
+            }
+        }
+
+        private void ResetLastQuery()
         {
             _lastQuery = null;
             _lastQueryResult = null;

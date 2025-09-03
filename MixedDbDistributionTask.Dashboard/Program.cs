@@ -21,14 +21,14 @@ namespace MixedDbDistributionTask.Dashboard
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddScoped<DashboardViewModel>();
 
-            var grpcChannel = CreateAuthenticatedChannel(new ClientTokenProvider(), builder.Configuration);
+            var grpcChannel = CreateAuthenticatedChannel(builder.Configuration);
             builder.Services.AddSingleton<Accessor.AccessorClient>(new Accessor.AccessorClient(grpcChannel));
             builder.Services.AddSingleton<DatabaseManager.DatabaseManagerClient>(new DatabaseManager.DatabaseManagerClient(grpcChannel));
 
             await builder.Build().RunAsync();
         }
 
-        private static GrpcChannel CreateAuthenticatedChannel(ClientTokenProvider tokenProvider, IConfiguration config)
+        private static GrpcChannel CreateAuthenticatedChannel(IConfiguration config)
         {
             try
             {
@@ -37,7 +37,7 @@ namespace MixedDbDistributionTask.Dashboard
 
                 var credentials = CallCredentials.FromInterceptor(async (context, metadata) =>
                 {
-                    var token = tokenProvider.GetToken(context);
+                    var token = ClientTokenProvider.Token;
                     if (token != null)
                     {
                         metadata.Add("api-key", $"{token}");

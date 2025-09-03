@@ -7,7 +7,7 @@ namespace MixedDbDistributionGrpcClient
     {
         static async Task Main(string[] args)
         {
-            using var channel = CreateAuthenticatedChannel(new ClientTokenProvider()); //replace with DI
+            using var channel = CreateAuthenticatedChannel();
 
             var accessorClient = new Accessor.AccessorClient(channel);
             var databaseManagerClient = new DatabaseManager.DatabaseManagerClient(channel);
@@ -30,11 +30,11 @@ namespace MixedDbDistributionGrpcClient
             Console.ReadKey();
         }
 
-        private static GrpcChannel CreateAuthenticatedChannel(ClientTokenProvider tokenProvider)
+        private static GrpcChannel CreateAuthenticatedChannel()
         {
             var credentials = CallCredentials.FromInterceptor(async (context, metadata) =>
             {
-                var token = tokenProvider.GetToken(context);
+                var token = ClientTokenProvider.Token;
                 if (token != null)
                 {
                     metadata.Add("api-key", $"{token}");

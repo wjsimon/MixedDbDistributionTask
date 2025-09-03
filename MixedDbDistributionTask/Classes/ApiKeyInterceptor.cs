@@ -3,7 +3,7 @@ using Grpc.Core.Interceptors;
 
 namespace MixedDbDistributionTask.Classes
 {
-    public class ApiKeyServerInterceptor : Interceptor
+    public class ApiKeyInterceptor : Interceptor
     {
         private readonly ILogger _logger;
         private readonly Dictionary<string, string> _validApiKeys = new Dictionary<string, string>()
@@ -11,7 +11,7 @@ namespace MixedDbDistributionTask.Classes
             { "ACCESS_TOKEN", "henara" }
         };
 
-        public ApiKeyServerInterceptor(ILogger<ApiKeyServerInterceptor> logger)
+        public ApiKeyInterceptor(ILogger<ApiKeyInterceptor> logger)
         {
             _logger = logger;
         }
@@ -27,8 +27,8 @@ namespace MixedDbDistributionTask.Classes
             {
                 var key = context.RequestHeaders.Get("api-key");
 
-                //no api key required
-                if (context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method?
+                //manually bypass where no api key required at all
+                if (context.Method.StartsWith("/databases.DatabaseManager") || context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method?
                 {
                     return await continuation(request, context);
                 }

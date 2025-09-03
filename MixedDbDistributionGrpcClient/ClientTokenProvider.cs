@@ -1,18 +1,7 @@
-﻿using Grpc.Core;
-
-namespace MixedDbDistributionGrpcClient
+﻿namespace MixedDbDistributionGrpcClient
 {
-    internal class ClientTokenProvider
+    internal static class ClientTokenProvider
     {
-        public ClientTokenProvider() { }
-
-        public string? GetToken(AuthInterceptorContext context)
-        {
-            if (context.MethodName == "GetRemedies") { return null; }
-            else { return "ACCESS_TOKEN"; }
-        }
-
-        public string GetInvalidToken()
-            => "INVALID";
+        public static string? Token { get; set; } = "ACCESS_TOKEN"; //I know, I know
     }
 }

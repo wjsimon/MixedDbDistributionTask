@@ -46,14 +46,14 @@
                                 <input id="api-key-input" @bind="ViewModel.ApiKey" />
                             </div>
                             <div class="d-flex flex-column gap-1 mt-3">
-                                @foreach (var query in ViewModel.AvailableQueries.Select((value, i) => new { i, value })) @* because for loops are still "bugged" (probably intended behaviour) *@
+                                @foreach (var query in ViewModel.GetAvailableQueriesForSelection()) @* because for loops are still "bugged" (probably intended behaviour) *@
                                 {
-                                    <span class="querylink @(GetQuerySelectedCss(query.value))" @onclick="() => ViewModel.RequestQuery(query.i)">@query.value</span>
+                                    <span class="querylink @(GetQuerySelectedCss(query))" @onclick="() => ViewModel.SelectQuery(query)">@query</span>
                                 }
                             </div>
                         </div>
                     }
-                    @if (ViewModel.HasQueryResult)
+                    @if (ViewModel.HasQuerySelection || ViewModel.HasQueryResult)
                     {
                         @* fix layout! *@
                         <div class="d-flex flex-column flex-grow-1 gap-1 p-2 border">
@@ -62,11 +62,25 @@
                                 <span>-</span>
                                 <span>@ViewModel.LastQuery</span>
                             </div>
-                            <div>
-                                <span>
-                                    @ViewModel.LastQueryResult
-                                </span>
-                            </div>
+                            @if (ViewModel.RequiredQueryParameters.Any())
+                            {
+                                @foreach (var param in ViewModel.RequiredQueryParameters.Select((value, index) => new { value, index }))
+                                {
+                                    <div class="d-flex flex-row gap-2 align-items-center">
+                                        <label for="@($"in-{param.value}")">@param.value</label>
+                                        <input id="@($"in-{param.value}")" type="text" @bind="_enteredQueryParameters[param.index]"/>
+                                    </div>
+                                }
+                                <button @onclick="() => ViewModel.RequestSelectedQuery(_enteredQueryParameters)">Go!</button>
+                            }
+                            @if (ViewModel.HasQueryResult)
+                            {
+                                <div>
+                                    <span>
+                                        @ViewModel.LastQueryResult
+                                    </span>
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -77,26 +91,24 @@
 
 @code {
     private const string LINK_SELECTED_CSS = "selected";
+
     private bool _showIntroduction = false;
+    private string?[] _enteredQueryParameters = [];
 
     protected override void OnInitialized()
     {
         ViewModel.InitialLoadCompleted += HandleInitialLoadComplete;
         ViewModel.Introduction.Completed += HandleIntroductionCompleted;
         ViewModel.DatabaseAvailabilityChanged += HandleDatabaseAvailabilityChanged;
+        ViewModel.SelectedQueryParametersRequired += HandleQueryParametersRequired;
     }
 
     public void Dispose()
     {
         ViewModel.InitialLoadCompleted -= HandleInitialLoadComplete;
-        ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
         ViewModel.Introduction.Completed -= HandleIntroductionCompleted;
-    }
-
-    private void HandleInitialLoadComplete(object? sender, EventArgs args)
-    {
-        _showIntroduction = !ViewModel.MasterAvailable;
-        InvokeAsync(StateHasChanged);
+        ViewModel.DatabaseAvailabilityChanged -= HandleDatabaseAvailabilityChanged;
+        ViewModel.SelectedQueryParametersRequired -= HandleQueryParametersRequired;
     }
 
     private string GetLinkSelectedCss(string tenant)
@@ -104,6 +116,13 @@
 
     private string GetQuerySelectedCss(string query)
         => ViewModel.IsQuerySelected(query) ? LINK_SELECTED_CSS : string.Empty;
+
+
+    private void HandleInitialLoadComplete(object? sender, EventArgs args)
+    {
+        _showIntroduction = !ViewModel.MasterAvailable;
+        InvokeAsync(StateHasChanged);
+    }
 
     private void HandleIntroductionCompleted(object? sender, EventArgs args)
     {
@@ -114,5 +133,11 @@
     private void HandleDatabaseAvailabilityChanged(object? sender, EventArgs args)
     {
         InvokeAsync(StateHasChanged); //precaution for the "under discussion" multi-threaded blazor WASM; not needed as now
+    }
+
+    private void HandleQueryParametersRequired(object? sender, int paramCount)
+    {
+        _enteredQueryParameters = new string?[paramCount];
+        InvokeAsync(StateHasChanged);
     }
 }

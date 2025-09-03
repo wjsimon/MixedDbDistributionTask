@@ -25,7 +25,7 @@ namespace MixedDbDistributionTask
             builder.Services.AddAuthorization();
             builder.Services.AddGrpc(options =>
             {
-                options.Interceptors.Add<ApiKeyServerInterceptor>();
+                options.Interceptors.Add<ApiKeyInterceptor>();
             });
 
             builder.AddServices();
