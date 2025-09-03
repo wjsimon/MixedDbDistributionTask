@@ -44,7 +44,6 @@ namespace MixedDbDistributionTask.Dashboard
                     }
                 });
 
-
                 var channel = GrpcChannel.ForAddress(host, new GrpcChannelOptions
                 {
                     HttpClient = new HttpClient(new GrpcWebHandler(GrpcWebMode.GrpcWeb, new HttpClientHandler())),

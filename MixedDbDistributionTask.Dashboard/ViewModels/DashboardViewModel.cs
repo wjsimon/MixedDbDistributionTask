@@ -175,11 +175,6 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             _masterAvailable = availability.MasterAvailable;
             _availableTenants = availability.AvailableDatabases.ToImmutableArray();
 
-            if (!MasterAvailable)
-            {
-                _introduction = new(this);
-            }
-
             if (!_fistLoadCompleted)
             {
                 _fistLoadCompleted = true;
