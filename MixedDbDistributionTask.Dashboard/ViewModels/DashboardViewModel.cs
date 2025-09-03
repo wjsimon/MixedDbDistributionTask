@@ -1,4 +1,5 @@
-﻿using MixedDbDistribution.Dashboard;
+﻿using Grpc.Core;
+using MixedDbDistribution.Dashboard;
 using MixedDbDistributionTask.Dashboard.Classes;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -16,7 +17,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
             _introduction = new(this);
 
-            _ = LoadDatabaseAvailability(); //together with non-nullable intro, this leads to a flicker everytime the app starts :(    (loadinitialdata event structure to prevent)
+            _ = LoadInitialData(); //together with non-nullable intro, this leads to a flicker everytime the app starts :(    (loadinitialdata event structure to prevent)
         }
 
         private readonly Accessor.AccessorClient _accessorClient;
@@ -40,10 +41,11 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             });
 
         private bool _masterAvailable = false;
-        private bool _fistLoadCompleted = false;
+        private bool _initialLoadCompleted = false;
         private int _showDebugDataPrompt = 0;
         private Introduction _introduction;
 
+        private string? _setupError = null;
         private string? _selectedDatabase = null;
         private string? _selectedQuery = null;
         private string? _lastQuery = null;
@@ -58,7 +60,8 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         public event EventHandler<string?>? DatabaseSelectionChanged;
         public event EventHandler<int>? SelectedQueryParametersRequired;
 
-        public bool ServiceReady => _fistLoadCompleted;
+        public bool ServiceReady => _initialLoadCompleted;
+        public string? SetupError => _setupError;
         public bool MasterAvailable => _masterAvailable;
         public int ShowDebugDataPrompt => _showDebugDataPrompt;
         public Introduction Introduction => _introduction;
@@ -66,9 +69,9 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
         public string? SelectedDatabase => _selectedDatabase;
         public string? ApiKey //teehee
-        { 
+        {
             get { return ClientTokenProvider.Token; }
-            set { ClientTokenProvider.Token = value; } 
+            set { ClientTokenProvider.Token = value; }
         }
 
         public string? SelectedQuery => _selectedQuery;
@@ -150,7 +153,8 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             }
         }
 
-        public string[] GetAvailableQueriesForSelection() { 
+        public string[] GetAvailableQueriesForSelection()
+        {
             if (_selectedDatabase == null) { return []; }
             return GetAvailableQueries(_selectedDatabase);
         }
@@ -163,23 +167,47 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             await RequestQuery(_selectedQuery, paramValues);
         }
 
-        public bool IsDatabaseSelected(string dbKey) 
+        public bool IsDatabaseSelected(string dbKey)
             => dbKey == _selectedDatabase;
 
         public bool IsQuerySelected(string query)
             => query == _lastQuery && _lastQueryResult != null;
 
+        private async Task LoadInitialData()
+        {
+            try
+            {
+                var ping = await _accessorClient.PingAsync(new PingRequest());
+                await LoadDatabaseAvailability();
+            }
+            catch (RpcException rpcEx)
+            {
+                if (rpcEx.Message.Contains("Failed to fetch"))
+                {
+                    _setupError = "Server unavailable. Check your configs and restart.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _setupError = ex.Message;
+            }
+            finally
+            {
+                if (!_initialLoadCompleted)
+                {
+                    _initialLoadCompleted = true;
+                }
+
+                InitialLoadCompleted?.Invoke(this, EventArgs.Empty);
+            }
+
+
+        }
         private async Task LoadDatabaseAvailability()
         {
             var availability = await _dbManagerClient.GetDatabaseAvailabilityAsync(new DatabasesRequest());
             _masterAvailable = availability.MasterAvailable;
             _availableTenants = availability.AvailableDatabases.ToImmutableArray();
-
-            if (!_fistLoadCompleted)
-            {
-                _fistLoadCompleted = true;
-                InitialLoadCompleted?.Invoke(this, EventArgs.Empty);
-            }
 
             DatabaseAvailabilityChanged?.Invoke(this, EventArgs.Empty); //this also invokes a re-render for the intro... not the best communication but works for now
         }
@@ -188,7 +216,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         {
             if (!_availableTenants.Contains(dbName)) { return []; }
 
-            if (dbName == "master") 
+            if (dbName == "master")
             {
                 return _availableQueries.Values.Where(qi => qi.Scope == QueryInfoScope.Master).Select(qi => qi.Id).ToArray();
             }
@@ -205,7 +233,8 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             _lastError = null;
             _lastQuery = query;
 
-            try { 
+            try
+            {
                 if (_lastQuery == QUERY_FIXED_REMEDIES)
                 {
                     var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
@@ -255,9 +284,9 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             {
                 return queryInfo.ParamIds;
             }
-            else 
+            else
             {
-                return []; 
+                return [];
             }
         }
 

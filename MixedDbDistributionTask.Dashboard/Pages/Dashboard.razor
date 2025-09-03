@@ -19,9 +19,11 @@
             @*         <div class="w-75 mb-4" style="border-bottom: 1px solid #888888;"></div> *@
         </div>
 
-        @if (ViewModel.Introduction == null)
+        @if (ViewModel.SetupError != null)
         {
-
+            <div class="d-flex flex-column justify-content-center align-items-center gap-1">
+                <span class="error-text">@ViewModel.SetupError</span>
+            </div>
         }
         else if (_showIntroduction)
         {
@@ -90,7 +92,7 @@
         @if (ViewModel.LastError != null)
         {
             <div class="d-flex flex-column justify-content-center align-items-center gap-1">
-                <span style="color: red; border: 1px solid red; padding: .5rem; margin-top: 1rem; font-size: .8rem;">@ViewModel.LastError</span>
+                <span class="error-text" style="font-size: .8rem;">@ViewModel.LastError</span>
                 <span style="font-size: .8rem;">Most likely the API key is invalid. Double check and try again? :)</span>
             </div>
         }

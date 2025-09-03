@@ -24,6 +24,13 @@
     cursor: pointer;
 }
 
+.error-text {
+    color: red;
+    border: 1px solid red;
+    padding: .5rem;
+    margin-top: 1rem;
+}
+
 /*.mylink:active {
     color: #0d6efd;
 }*/
