@@ -49,6 +49,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         private string? _lastQuery = null;
         private string? _lastQueryResult = null;
         private string? _lastQueryResultFormatted = null;
+        private string? _lastError = null;
 
         private ImmutableArray<string> _availableTenants = [];
 
@@ -75,6 +76,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         public string? LastQuery => _lastQuery;
         public string? LastQueryResult => _lastQueryResult;
         public string? LastQueryResultFormatted => _lastQueryResultFormatted;
+        public string? LastError => _lastError;
 
         public bool HasSelection => _selectedDatabase != null;
         public bool HasQuerySelection => _selectedQuery != null;
@@ -126,7 +128,6 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                 }
 
                 _selectedQuery = null;
-
                 ResetLastQuery();
                 DatabaseSelectionChanged?.Invoke(this, _selectedDatabase);
             }
@@ -206,40 +207,48 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         {
             if (!_availableQueries.ContainsKey(query)) { return; }
 
+            _lastError = null;
             _lastQuery = query;
-            if (_lastQuery == QUERY_FIXED_REMEDIES)
-            {
-                var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
-                _lastQueryResult = reply.ToString();
-            }
-            else if (_lastQuery == QUERY_PRACTICES)
-            {
-                var reply = await _accessorClient.GetPracticesAsync(new PracticesRequest());
-                _lastQueryResult = reply.ToString();
-            }
-            else if (_lastQuery == QUERY_PFORP)
-            {
-                var reply = await _accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = paramValues[0] });
-                _lastQueryResult = reply.ToString();
-            }
-            else if (_lastQuery == QUERY_APPOINTMENTS_PFORP)
-            {
-                var reply = await _accessorClient.GetAppointmentsForPatientAtPracticeAsync(
-                    new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1] });
 
-                _lastQueryResult = reply.ToString();
-            }
-            else if (_lastQuery == QUERY_APPOINTMENTS_THERAPIST)
-            {
-                var reply = await _accessorClient.GetAppointmentsForTherapistAsync(
-                    new AppointmentRequest() { TherapistId = paramValues[0] });
+            try { 
+                if (_lastQuery == QUERY_FIXED_REMEDIES)
+                {
+                    var reply = await _accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
+                    _lastQueryResult = reply.ToString();
+                }
+                else if (_lastQuery == QUERY_PRACTICES)
+                {
+                    var reply = await _accessorClient.GetPracticesAsync(new PracticesRequest());
+                    _lastQueryResult = reply.ToString();
+                }
+                else if (_lastQuery == QUERY_PFORP)
+                {
+                    var reply = await _accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = paramValues[0] });
+                    _lastQueryResult = reply.ToString();
+                }
+                else if (_lastQuery == QUERY_APPOINTMENTS_PFORP)
+                {
+                    var reply = await _accessorClient.GetAppointmentsForPatientAtPracticeAsync(
+                        new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1] });
 
-                _lastQueryResult = reply.ToString();
+                    _lastQueryResult = reply.ToString();
+                }
+                else if (_lastQuery == QUERY_APPOINTMENTS_THERAPIST)
+                {
+                    var reply = await _accessorClient.GetAppointmentsForTherapistAsync(
+                        new AppointmentRequest() { TherapistId = paramValues[0] });
+
+                    _lastQueryResult = reply.ToString();
+                }
+                else
+                {
+                    ResetLastQuery();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _lastQuery = null;
-                _lastQueryResult = null;
+                ResetLastQuery();
+                _lastError = ex.ToString();
             }
         }
 
@@ -262,6 +271,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
             _lastQuery = null;
             _lastQueryResult = null;
             _lastQueryResultFormatted = null;
+            _lastError = null;
         }
     }
 }

@@ -68,7 +68,7 @@
                                 {
                                     <div class="d-flex flex-row gap-2 align-items-center">
                                         <label for="@($"in-{param.value}")">@param.value</label>
-                                        <input id="@($"in-{param.value}")" type="text" @bind="_enteredQueryParameters[param.index]"/>
+                                        <input id="@($"in-{param.value}")" type="text" @bind="_enteredQueryParameters[param.index]" />
                                     </div>
                                 }
                                 <button @onclick="() => ViewModel.RequestSelectedQuery(_enteredQueryParameters)">Go!</button>
@@ -84,6 +84,14 @@
                         </div>
                     }
                 </div>
+            </div>
+        }
+
+        @if (ViewModel.LastError != null)
+        {
+            <div class="d-flex flex-column justify-content-center align-items-center gap-1">
+                <span style="color: red; border: 1px solid red; padding: .5rem; margin-top: 1rem; font-size: .8rem;">@ViewModel.LastError</span>
+                <span style="font-size: .8rem;">Most likely the API key is invalid. Double check and try again? :)</span>
             </div>
         }
     }
