@@ -15,14 +15,15 @@ namespace MixedDbDistributionTask.QuickStart
 
             await adminClient.CreateMasterDatabaseAsync(new DatabaseCreationRequest());
             await adminClient.CreateTenantDatabaseAsync(new DatabaseCreationRequest() { TenantId = "henara" });
-            await adminClient.CreateTenantDatabaseAsync(new DatabaseCreationRequest() { TenantId = "nehara" });
+            //await adminClient.CreateTenantDatabaseAsync(new DatabaseCreationRequest() { TenantId = "nehara" });
 
             var genReq = new GenerationRequest() { Selection = 3 };
-            genReq.Tenants.AddRange(["henara", "nehara"]);
+            genReq.Tenants.AddRange(["henara"]);
 
             await adminClient.GenerateDebugDataAsync(genReq);
 
             //lil test run
+            var pfpReply = await accessorClient.GetPfpAsync(new PfpReq() { PracticeIk = "practice1" });
             var databases = await adminClient.GetDatabaseAvailabilityAsync(new DatabasesRequest());
             var create = await adminClient.CreateMasterDatabaseAsync(new DatabaseCreationRequest());
             var practicesReply = await accessorClient.GetPracticesAsync(new PracticesRequest());
@@ -31,6 +32,7 @@ namespace MixedDbDistributionTask.QuickStart
             var appointmentsForPatientsForPractice = await accessorClient.GetAppointmentsForPatientAtPracticeAsync(new AppointmentRequest() { PatientKv = "0", PracticeIk = "practice1" });
             var appointmentsForTherapist = await accessorClient.GetAppointmentsForTherapistAsync(new AppointmentRequest() { TherapistId = "therapist1" });
 
+            var pfp = pfpReply.Patients;
             var practices = practicesReply.Practices;
             var remedies = remediesReply.Remedies;
             var patients = patientsReply.Patients;
@@ -39,6 +41,7 @@ namespace MixedDbDistributionTask.QuickStart
 
             //just set a breakpoint here to check the data
             Console.ReadKey();
+            Console.WriteLine("Done");
         }
 
         private static GrpcChannel CreateAuthenticatedChannel()

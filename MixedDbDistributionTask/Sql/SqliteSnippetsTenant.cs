@@ -21,6 +21,10 @@
                 diagnosis TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 is_fixed_type INTEGER
+            );
+            CREATE TABLE IF NOT EXISTS TherapistsPracticesLink(
+                therapist_id TEXT NOT NULL,
+                practice_ik TEXT NOT NULL
             );";
 
         public const string InsertAppointment = @"
@@ -31,6 +35,11 @@
         public const string InsertTherapist = @"
             INSERT INTO Therapist (id, name)
             VALUES (@id, @name);
+        ";
+
+        public const string InserTherapistPracticeRelation = @"
+            INSERT INTO TherapistsPracticesLink (therapist_id, practice_ik)
+            VALUES (@therapist_id, @practice_ik)
         ";
 
         public const string SelectTherapist = @"SELECT * FROM Therapist WHERE id = @id;";

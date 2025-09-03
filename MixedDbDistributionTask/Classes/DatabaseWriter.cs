@@ -101,23 +101,52 @@ namespace MixedDbDistributionTask.Classes
                 var kvParam = sqlCommand.CreateParameter();
                 kvParam.ParameterName = "@kv_nummer";
 
-                var ikParam = sqlCommand.CreateParameter();
-                ikParam.ParameterName = "@practice_ik";
-
                 var nameParam = sqlCommand.CreateParameter();
                 nameParam.ParameterName = "@name";
 
                 var ageParam = sqlCommand.CreateParameter();
                 ageParam.ParameterName = "@age";
 
-                sqlCommand.Parameters.AddRange([kvParam, ikParam, nameParam, ageParam]);
+                sqlCommand.Parameters.AddRange([kvParam, nameParam, ageParam]);
 
                 for (int i = 0; i < patients.Length; i++)
                 {
                     kvParam.Value = patients[i].KvNummer;
-                    ikParam.Value = patients[i].PracticeIk;
                     nameParam.Value = patients[i].Name;
                     ageParam.Value = patients[i].Age;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public static int InsertPatientPracticeRelations(DbIndex dbIndex, PatientUtility.PracticeRelationStub[] relations)
+        {
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsMaster.InsertPatientPracticeRelation;
+
+                var kvParam = sqlCommand.CreateParameter();
+                kvParam.ParameterName = "@patient_kv";
+
+                var ikParam = sqlCommand.CreateParameter();
+                ikParam.ParameterName = "@practice_ik";
+
+                sqlCommand.Parameters.AddRange([kvParam, ikParam]);
+
+                for (int i = 0; i < relations.Length; i++)
+                {
+                    kvParam.Value = relations[i].PatientKv;
+                    ikParam.Value = relations[i].PracticeIk;
 
                     inserted += sqlCommand.ExecuteNonQuery();
                 }
@@ -154,6 +183,39 @@ namespace MixedDbDistributionTask.Classes
                 {
                     idParam.Value = therapists[i].Id;
                     nameParam.Value = therapists[i].Name;
+
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
+        public static int InsertTherapistPracticeRelation(DbIndex dbIndex, TherapistUtility.PracticeRelationStub[] relations)
+        {
+            using var connection = new SqliteConnection(dbIndex.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsTenant.InserTherapistPracticeRelation;
+
+                var idParam = sqlCommand.CreateParameter();
+                idParam.ParameterName = "@therapist_id";
+
+                var ikParam = sqlCommand.CreateParameter();
+                ikParam.ParameterName = "@practice_ik";
+
+                sqlCommand.Parameters.AddRange([idParam, ikParam]);
+
+                for (int i = 0; i < relations.Length; i++)
+                {
+                    idParam.Value = relations[i].TherapistId;
+                    ikParam.Value = relations[i].PracticeIk;
 
                     inserted += sqlCommand.ExecuteNonQuery();
                 }

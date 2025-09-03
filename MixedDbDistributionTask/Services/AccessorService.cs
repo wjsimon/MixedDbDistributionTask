@@ -18,6 +18,19 @@ namespace MixedDbDistributionTask.Services
         private readonly ILogger<AccessorService> _logger;
         private readonly DatabaseCreationService _dbcs;
 
+        public override Task<PfpReply> GetPfp(PfpReq request, ServerCallContext context)
+        {
+            var reply = new PfpReply();
+            if (AllowGlobal(_dbcs, context, out DbIndex? master))
+            {
+                if (master == null) { throw new Exception("something went VERY wrong"); }
+                reply.Patients.AddRange(DatabaseReader.GetPatientsForPractice((DbIndex)master, request.PracticeIk));
+            }
+
+            return Task.FromResult(reply);
+
+        }
+
         public override Task<PingReply> Ping(PingRequest request, ServerCallContext context)
         {
             return Task.FromResult(new PingReply { Message = "Hello " + request.Payload });
@@ -61,7 +74,7 @@ namespace MixedDbDistributionTask.Services
             if (AllowGlobal(_dbcs, context, out DbIndex? master))
             {
                 if (master == null) { throw new Exception("something went VERY wrong"); }
-                reply.Patients.AddRange(DatabaseReader.GetPatients((DbIndex)master, request.PracticeIk));
+                reply.Patients.AddRange(DatabaseReader.GetPatientsForPractice((DbIndex)master, request.PracticeIk));
             }
 
             return Task.FromResult(reply);

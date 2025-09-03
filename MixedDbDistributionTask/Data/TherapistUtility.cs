@@ -13,5 +13,6 @@ namespace MixedDbDistributionTask.Shared.Data
         }
 
         public readonly record struct DbStub(string Id, string Name);
+        public readonly record struct PracticeRelationStub(string TherapistId, string PracticeIk);
     }
 }

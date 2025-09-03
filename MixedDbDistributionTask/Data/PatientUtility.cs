@@ -4,16 +4,19 @@ namespace MixedDbDistributionTask.Shared.Data
 {
     public static class PatientUtility
     {
-        public static PatientDto From(DbDataReader dbReader, PracticeDto? practice) //practice needs to be known beforehand; can always be acquired at the caller since the reader can be
+        public static PatientDto DTO(DbDataReader dbReader, PracticeDto[] practices) //practice needs to be known beforehand; can always be acquired at the caller since the reader can be
         {
-            return new PatientDto() { 
+            var dto = new PatientDto() { 
                 KvNummer = dbReader.GetString(0),
-                Practice = practice,
-                Name = dbReader.GetString(2),
-                Age = dbReader.GetInt32(3)
+                Name = dbReader.GetString(1),
+                Age = dbReader.GetInt32(2)
             };
+
+            dto.Practices.AddRange(practices);
+            return dto;
         }
 
         public readonly record struct DbStub(string KvNummer, string PracticeIk, string Name, int Age);
+        public readonly record struct PracticeRelationStub(string PatientKv, string PracticeIk);
     }
 }

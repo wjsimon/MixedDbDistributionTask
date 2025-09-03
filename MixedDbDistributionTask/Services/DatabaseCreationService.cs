@@ -69,6 +69,15 @@ namespace MixedDbDistributionTask.Services
             };
 
             DatabaseWriter.InsertPatients(dbIndex, patients);
+
+            var relations = new PatientUtility.PracticeRelationStub[]
+            {
+                new PatientUtility.PracticeRelationStub("0", "practice1"),
+                new PatientUtility.PracticeRelationStub("1", "practice1"),
+                new PatientUtility.PracticeRelationStub("2", "practice2")
+            };
+
+            DatabaseWriter.InsertPatientPracticeRelations(dbIndex, relations);
             return true;
         }
 
@@ -80,6 +89,14 @@ namespace MixedDbDistributionTask.Services
             };
 
             DatabaseWriter.InsertTherapists(dbIndex, therapists);
+
+            var relations = new TherapistUtility.PracticeRelationStub[]
+            {
+                new TherapistUtility.PracticeRelationStub("therapist1", "practice1"),
+                new TherapistUtility.PracticeRelationStub("therapist1", "practice2")
+            };
+
+            DatabaseWriter.InsertTherapistPracticeRelation(dbIndex, relations);
 
             var appointments = new AppointmentUtility.DbStub[]
             {

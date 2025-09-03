@@ -79,9 +79,9 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static PatientDto[] GetPatients(DbIndex master, string practiceIk)
+        public static PatientDto[] GetPatientsForPractice(DbIndex dbIndex, string practiceIk)
         {
-            using var connection = new SqliteConnection(master.Source);
+            using var connection = new SqliteConnection(dbIndex.Source);
             connection.Open();
 
             using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatientsForPractice, connection);
@@ -94,8 +94,7 @@ namespace MixedDbDistributionTask.Classes
                 List<PatientDto> patients = [];
                 while (sr.Read())
                 {
-                    patients.Add(
-                        PatientUtility.From(sr, GetSinglePractice(connection, sr.GetString(1))));
+                    patients.Add(PatientUtility.DTO(sr, []));
                 }
 
                 return patients.ToArray();
@@ -177,6 +176,30 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
+        private static PracticeDto[] GetPracticesForPatient(SqliteConnection connection, string patientKv)
+        {
+            return [];
+
+            //using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPractice, connection);
+            ////sqlCommand.Parameters.AddWithValue("@ik", ik);
+
+            //using var sr = sqlCommand.ExecuteReader();
+
+            //if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
+
+            //PracticeDto? practice = null;
+            //while (sr.Read())
+            //{
+            //    practice = PracticeUtility.DTO(sr);
+            //    break;
+            //}
+
+            //if (practice == null) { throw new InvalidDataException("invalid request, practice was found but not assigned"); }
+
+            //return practice;
+
+        }
+
         private static PracticeDto GetSinglePractice(SqliteConnection connection, string ik)
         {
             using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPractice, connection);
@@ -221,23 +244,24 @@ namespace MixedDbDistributionTask.Classes
 
         private static PatientDto GetSinglePatient(SqliteConnection connection, string kv)
         {
-            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatient, connection);
-            sqlCommand.Parameters.AddWithValue("@kv_nummer", kv);
+            return null;
+            //using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectPatient, connection);
+            //sqlCommand.Parameters.AddWithValue("@kv_nummer", kv);
 
-            using var sr = sqlCommand.ExecuteReader();
+            //using var sr = sqlCommand.ExecuteReader();
 
-            if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
+            //if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
 
-            PatientDto? patient = null;
-            while (sr.Read())
-            {
-                patient = PatientUtility.From(sr, GetSinglePractice(connection, sr.GetString(1))); //possible since they are both on the master
-                break;
-            }
+            //PatientDto? patient = null;
+            //while (sr.Read())
+            //{
+            //    patient = PatientUtility.From(sr, GetSinglePractice(connection, sr.GetString(1))); //possible since they are both on the master
+            //    break;
+            //}
 
-            if (patient == null) { throw new InvalidDataException("invalid request, patient was found but not assigned"); }
+            //if (patient == null) { throw new InvalidDataException("invalid request, patient was found but not assigned"); }
 
-            return patient;
+            //return patient;
         }
 
         private static RemedyDto SearchSingleRemedy(SqliteConnection connectionMaster, SqliteConnection connectionTenant, string diagnosis)
