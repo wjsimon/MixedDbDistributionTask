@@ -42,7 +42,6 @@
                     @if (ViewModel.HasSelection)
                     {
                         <div class="d-flex flex-column flex-grow-1 justify-content-center align-items-start border p-2">
-                            <span>@ViewModel.SelectedDatabase selected!</span>
                             <div class="d-flex flex-row justify-content-center align-items-center gap-2">
                                 <label for="api-key-input">Enter API key here:</label>
                                 <input id="api-key-input" @bind="ViewModel.ApiKey" />
