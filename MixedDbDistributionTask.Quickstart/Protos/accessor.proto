@@ -5,11 +5,11 @@ option csharp_namespace = "MixedDbDistributionTask.QuickStart";
 package accessor;
 
 service Accessor {
-	rpc Ping(PingRequest) returns (PingReply);
+	rpc Ping (PingRequest) returns (PingReply);
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
-	rpc GetPatientsForPractice(PatientsRequest) returns (PatientsReply);
-	rpc GetTherapists(TherapistsRequest) returns (TherapistsReply);
+	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
+	rpc GetTherapist(TherapistRequest) returns (TherapistReply);
 	rpc GetAppointmentsForPatientAtPractice(AppointmentRequest) returns (AppointmentReply);
 	rpc GetAppointmentsForTherapist (AppointmentRequest) returns (AppointmentReply);
 }
@@ -26,8 +26,6 @@ message PracticeDto {
 	string ik = 1;
 	string name = 2;
 	string company = 3;
-	repeated PatientDto patients = 4;
-	repeated TherapistDto therapists = 5;
 }
 
 message PracticesRequest {
@@ -54,29 +52,30 @@ message RemedyReply {
 
 message PatientDto {
 	string kvNummer = 1;
-	repeated PracticeDto practices = 2;
+	PracticeDto practice = 2;
 	string name = 3;
 	int32 age = 4;
 }
 
-message PatientsRequest {
+message PatientRequest {
 	string practiceIk = 1;
 }
 
-message PatientsReply {
+message PatientReply {
 	repeated PatientDto patients = 1;
 }
 
 message TherapistDto {
 	string id = 1;
 	string name = 2;
-	repeated PracticeDto practices = 3;
 }
 
-message TherapistsRequest { }
+message TherapistRequest {
+	string id = 1;
+}
 
-message TherapistsReply {
-	repeated TherapistDto therapists = 1;
+message TherapistReply {
+	TherapistDto therapist = 1;
 }
 
 message AppointmentDto {
