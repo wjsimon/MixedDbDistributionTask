@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "MixedDbDistributionGrpcClient";
+option csharp_namespace = "MixedDbDistributionTask.QuickStart";
 
 package accessor;
 

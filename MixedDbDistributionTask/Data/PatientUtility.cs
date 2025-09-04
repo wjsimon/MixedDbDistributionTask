@@ -4,7 +4,7 @@ namespace MixedDbDistributionTask.Shared.Data
 {
     public static class PatientUtility
     {
-        public static PatientDto From(DbDataReader dbReader, PracticeDto practice) //practice needs to be known beforehand; can always be acquired at the caller since the reader can be
+        public static PatientDto From(DbDataReader dbReader, PracticeDto? practice) //practice needs to be known beforehand; can always be acquired at the caller since the reader can be
         {
             return new PatientDto() { 
                 KvNummer = dbReader.GetString(0),

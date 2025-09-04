@@ -186,14 +186,14 @@ namespace MixedDbDistributionTask.Classes
 
             if (!sr.HasRows) { throw new InvalidDataException("invalid request, query returned no rows"); }
 
-            PracticeDto practice = default;
+            PracticeDto? practice = null;
             while (sr.Read())
             {
                 practice = PracticeUtility.DTO(sr);
                 break;
             }
 
-            if (practice == default) { throw new InvalidDataException("invalid request, practice was found but not assigned"); }
+            if (practice == null) { throw new InvalidDataException("invalid request, practice was found but not assigned"); }
 
             return practice;
         }

@@ -1,4 +1,4 @@
-﻿namespace MixedDbDistributionGrpcClient
+﻿namespace MixedDbDistributionTask.QuickStart
 {
     internal static class ClientTokenProvider
     {
