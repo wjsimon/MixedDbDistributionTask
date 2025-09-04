@@ -76,7 +76,7 @@ namespace MixedDbDistributionTask.Services
                 {
                     if (_dbcs.TryGetIndex(tenantId, out DbIndex tenantIndex))
                     {
-                        _dbcs.GenerateTenantDebugData(tenantIndex);
+                        _dbcs.GenerateTenantDebugData(tenantIndex, tenantId);
                     }
                 }
             }

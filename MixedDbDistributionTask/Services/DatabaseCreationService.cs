@@ -40,26 +40,28 @@ namespace MixedDbDistributionTask.Services
         public bool TenantValid(string tenantId)
             => _availableDatabases.ContainsKey(tenantId);
 
-        public bool GenerateMasterDebugData(DbIndex dbIndex)
+        public bool GenerateMasterDebugData(DbIndex master)
         {
             var practices = new PracticeUtility.DbStub[]
             {
                 new PracticeUtility.DbStub("practice1", "Practice #1",  "The Practice Company"),
                 new PracticeUtility.DbStub("practice2", "Leaf and Machine", "The Practice Company"),
-                new PracticeUtility.DbStub("practice3", "Not a Practice", "Some Competition")
+                new PracticeUtility.DbStub("practice3", "Not a Practice", "Some Competition"),
+                new PracticeUtility.DbStub("practice4", "The Fun House", "We Have Very Good Lawyers Corp."),
+                new PracticeUtility.DbStub("practice5", "No Worries Therapies", "We Have Very Good Lawyers Corp.")
             };
 
             //debug insertions for population
-            DatabaseWriter.InsertPractices(dbIndex, practices);
+            DatabaseWriter.InsertPractices(master, practices);
 
             var fixedRemedies = new RemedyUtility.DbStub[]
             {
                 new RemedyUtility.DbStub("bad", "The Bad One", 1),
                 new RemedyUtility.DbStub("evenworse", "Wouldn't want to be you", 1),
-                new RemedyUtility.DbStub("good", "All good buddy", 1)
+                new RemedyUtility.DbStub("good", "All good buddy", 1),
             };
 
-            DatabaseWriter.InsertRemedies(dbIndex, fixedRemedies);
+            DatabaseWriter.InsertRemedies(master, fixedRemedies);
 
             var patients = new PatientUtility.DbStub[]
             {
@@ -68,35 +70,57 @@ namespace MixedDbDistributionTask.Services
                     new PatientUtility.DbStub("2", "practice2", "Raphael Schweda", -1)
             };
 
-            DatabaseWriter.InsertPatients(dbIndex, patients);
+            DatabaseWriter.InsertPatients(master, patients);
 
             var relations = new PatientUtility.PracticeRelationStub[]
             {
                 new PatientUtility.PracticeRelationStub("0", "practice1"),
+                new PatientUtility.PracticeRelationStub("0", "practice2"),
+                new PatientUtility.PracticeRelationStub("0", "practice4"),
                 new PatientUtility.PracticeRelationStub("1", "practice1"),
-                new PatientUtility.PracticeRelationStub("2", "practice2")
+                new PatientUtility.PracticeRelationStub("1", "practice4"),
+                new PatientUtility.PracticeRelationStub("1", "practice1"),
+                new PatientUtility.PracticeRelationStub("2", "practice2"),
+                new PatientUtility.PracticeRelationStub("2", "practice3")
             };
 
-            DatabaseWriter.InsertPatientPracticeRelations(dbIndex, relations);
+            DatabaseWriter.InsertPatientPracticeRelations(master, relations);
             return true;
         }
 
-        public bool GenerateTenantDebugData(DbIndex dbIndex)
+        public bool GenerateTenantDebugData(DbIndex tenantDb, string prefix)
         {
-            var therapists = new TherapistUtility.DbStub[]
+            var remedies = new RemedyUtility.DbStub[]
             {
-                new TherapistUtility.DbStub("therapist1", "Viktor Frankenstein")
+                new RemedyUtility.DbStub("tea", "Tea", 0),
+                new RemedyUtility.DbStub("badatcardgames", "Exposure Therapy", 0),
             };
 
-            DatabaseWriter.InsertTherapists(dbIndex, therapists);
+            DatabaseWriter.InsertRemedies(tenantDb, remedies);
+
+            var therapists = new TherapistUtility.DbStub[]
+            {
+                new TherapistUtility.DbStub($"{prefix}_therapist1", "Viktor Frankenstein"),
+                new TherapistUtility.DbStub($"{prefix}_therapist2", "Albert Hofmann"),
+                new TherapistUtility.DbStub($"{prefix}_therapist3", "Dr. Doom")
+            };
+
+            DatabaseWriter.InsertTherapists(tenantDb, therapists);
 
             var relations = new TherapistUtility.PracticeRelationStub[]
             {
-                new TherapistUtility.PracticeRelationStub("therapist1", "practice1"),
-                new TherapistUtility.PracticeRelationStub("therapist1", "practice2")
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist1", "practice1"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist1", "practice2"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist2", "practice1"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist2", "practice2"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist2", "practice3"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist2", "practice4"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist2", "practice5"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist3", "practice1"),
+                new TherapistUtility.PracticeRelationStub($"{prefix}_therapist3", "practice4")
             };
 
-            DatabaseWriter.InsertTherapistPracticeRelation(dbIndex, relations);
+            DatabaseWriter.InsertTherapistPracticeRelation(tenantDb, relations);
 
             var appointments = new AppointmentUtility.DbStub[]
             {
@@ -104,14 +128,39 @@ namespace MixedDbDistributionTask.Services
                         "appointment1",
                         "2025-08-31 22:30:00",
                         "2025-08-31 22:31:00",
-                        "therapist1",
+                        $"{prefix}_therapist1",
                         "0",
+                        "practice4",
+                        "bad"
+                    ),
+                    new AppointmentUtility.DbStub(
+                        "appointment2",
+                        "2025-08-31 12:47:00",
+                        "2025-08-31 18:00:00",
+                        $"{prefix}_therapist2",
+                        "0",
+                        "practice3",
+                        "badatcardgames"
+                    ),new AppointmentUtility.DbStub(
+                        "appointment3",
+                        "2025-08-31 22:30:00",
+                        "2025-08-31 22:31:00",
+                        $"{prefix}_therapist2",
+                        "1",
                         "practice1",
-                        "evenworse"
-                    )
+                        "tea"
+                    ),new AppointmentUtility.DbStub(
+                        "appointment4",
+                        "2025-08-31 22:30:00",
+                        "2025-08-31 22:31:00",
+                        $"{prefix}_therapist3",
+                        "2",
+                        "practice4",
+                        "good"
+                    ),
             };
 
-            DatabaseWriter.InsertAppointments(dbIndex, appointments);
+            DatabaseWriter.InsertAppointments(tenantDb, appointments);
             return true;
         }
 
@@ -120,11 +169,11 @@ namespace MixedDbDistributionTask.Services
             if (File.Exists(MakeSqliteFileLocation(location, name)))
             {
                 _availableDatabases.TryAdd(name, new DbIndex(MakeSqliteDataSource(location, name)));
-                return false; 
+                return false;
             }
-            else 
-            { 
-                return Create(location, name, isMaster); 
+            else
+            {
+                return Create(location, name, isMaster);
             }
         }
 
