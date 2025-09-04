@@ -34,7 +34,7 @@ namespace MixedDbDistributionTask.Services
 
             if (!_dbcs.MasterAvailable)
             {
-                var loc = _configuration["ConnectionStrings:SqliteMasterDeb"];
+                var loc = _configuration["ConnectionStrings:SqliteDbPath"];
                 if (loc == null) { throw new Exception("Server configuration invalid. No sqlite connection string present."); }
 
                 _dbcs.CreateMasterDbSafe(loc);
@@ -49,7 +49,7 @@ namespace MixedDbDistributionTask.Services
 
             if (!_dbcs.TryGetIndex(request.TenantId, out DbIndex index))
             {
-                var loc = _configuration["ConnectionStrings:SqliteMasterDeb"];
+                var loc = _configuration["ConnectionStrings:SqliteDbPath"];
                 if (loc == null) { throw new Exception("Server configuration invalid. No sqlite connection string present."); }
 
                 _dbcs.CreateTenantDbSafe(loc, request.TenantId);

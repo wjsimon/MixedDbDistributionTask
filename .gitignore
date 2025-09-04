@@ -98,6 +98,9 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Sqlite Databases
+*.db
+
 # Chutzpah Test files
 _Chutzpah*
 

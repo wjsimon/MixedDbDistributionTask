@@ -192,7 +192,7 @@ namespace MixedDbDistributionTask.Services
 
         private void CheckForDatabases()
         {
-            var loc = _configuration["ConnectionStrings:SqliteMasterDeb"];
+            var loc = _configuration["ConnectionStrings:SqliteDbPath"];
             if (loc == null) { return; } //throw instead?
 
             var paths = CollectDatabases(loc);
