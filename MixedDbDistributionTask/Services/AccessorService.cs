@@ -8,14 +8,11 @@ namespace MixedDbDistributionTask.Services
     internal class AccessorService : Accessor.AccessorBase
     {
         public AccessorService(
-            ILogger<AccessorService> logger,
             DatabaseCreationService dbcs)
         {
-            _logger = logger;
             _dbcs = dbcs;
         }
 
-        private readonly ILogger<AccessorService> _logger;
         private readonly DatabaseCreationService _dbcs;
 
         public override Task<PingReply> Ping(PingRequest request, ServerCallContext context)
@@ -70,12 +67,12 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new AppointmentReply();
 
-            if (AllowLocal(_dbcs, context, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
+            if (AllowLocal(_dbcs, context, request.Tenant, out DbIndex? tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
                 reply.Appointments.AddRange(
-                    DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, tenantDb, request.PatientKv, request.PracticeIk));
+                    DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, (DbIndex)tenantDb!, request.PatientKv, request.PracticeIk));
             }
-                
+
             return Task.FromResult(reply);
         }
 
@@ -84,11 +81,11 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new TherapistsReply();
 
-            if (AllowLocal(_dbcs, context, out DbIndex tenantDb))
+            if (AllowLocal(_dbcs, context, request.Tenant, out DbIndex? tenantDb))
             {
-                reply.Therapists.AddRange(DatabaseReader.GetTherapists(tenantDb));
+                reply.Therapists.AddRange(DatabaseReader.GetTherapists((DbIndex)tenantDb!));
             }
-            
+
             return Task.FromResult(reply);
         }
 
@@ -96,10 +93,10 @@ namespace MixedDbDistributionTask.Services
         {
             var reply = new AppointmentReply();
 
-            if (AllowLocal(_dbcs, context, out DbIndex tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
+            if (AllowLocal(_dbcs, context, request.Tenant, out DbIndex? tenantDb)) //crashes if missing => intended behaviour, the interceptor fucked up
             {
                 reply.Appointments.AddRange(
-                    DatabaseReader.GetAppointmentsForTherapist(_dbcs.MasterIndex, tenantDb, request.TherapistId));
+                    DatabaseReader.GetAppointmentsForTherapist(_dbcs.MasterIndex, (DbIndex)tenantDb!, request.TherapistId));
             }
 
             return Task.FromResult(reply);

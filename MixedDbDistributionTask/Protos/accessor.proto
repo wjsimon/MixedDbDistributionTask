@@ -73,7 +73,9 @@ message TherapistDto {
 	repeated PracticeDto practices = 3;
 }
 
-message TherapistsRequest { }
+message TherapistsRequest {
+	string tenant = 1;
+}
 
 message TherapistsReply {
 	repeated TherapistDto therapists = 1;
@@ -93,6 +95,7 @@ message AppointmentRequest {
 	string patientKv = 1;
 	string practiceIk = 2;
 	string therapistId = 3;
+	string tenant = 4;
 }
 
 message AppointmentReply {

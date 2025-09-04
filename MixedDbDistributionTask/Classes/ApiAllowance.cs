@@ -22,8 +22,8 @@ namespace MixedDbDistributionTask.Classes
 
         public static bool AllowGlobal(DatabaseCreationService dbcs, ServerCallContext context, out DbIndex? masterIndex) //much bigger check for the less oppressive policy?
         {
-            var tenantId = context.UserState["tenant"]?.ToString() ?? string.Empty;
-            if (tenantId != null && dbcs.MasterAvailable && dbcs.TenantValid(tenantId))
+            string[] grants = (string[])context.UserState["grants"];
+            if (grants != null && dbcs.MasterAvailable && grants.Any(dbcs.TenantValid))
             {
                 masterIndex = dbcs.MasterIndex;
                 return true;
@@ -35,9 +35,22 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
-        public static bool AllowLocal(DatabaseCreationService dbcs, ServerCallContext context, out DbIndex dbIndex) //if db returns, api key was succesfully matched to a database
+        public static bool AllowLocal(DatabaseCreationService dbcs, ServerCallContext context, string requestedTenant, out DbIndex? dbIndex) //if db returns, api key was succesfully matched to a database
         {
-            return dbcs.TryGetIndex(context.UserState["tenant"].ToString()!, out dbIndex);
+            if (((string[])context.UserState["grants"]).Contains(requestedTenant))
+            {
+                var success = dbcs.TryGetIndex(requestedTenant, out DbIndex found);
+                
+                if (success) { dbIndex = found; }
+                else { dbIndex = null; }
+
+                return success;
+            }
+            else
+            {
+                dbIndex = null;
+                return false;
+            }
         }
     }
 }

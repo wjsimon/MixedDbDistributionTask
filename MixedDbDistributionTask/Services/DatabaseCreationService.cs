@@ -40,7 +40,7 @@ namespace MixedDbDistributionTask.Services
         public bool TenantValid(string tenantId)
             => _availableDatabases.ContainsKey(tenantId);
 
-        public bool GenerateMasterDebugData(DbIndex master)
+        public void GenerateMasterDebugData(DbIndex master)
         {
             var practices = new PracticeUtility.DbStub[]
             {
@@ -85,10 +85,9 @@ namespace MixedDbDistributionTask.Services
             };
 
             DatabaseWriter.InsertPatientPracticeRelations(master, relations);
-            return true;
         }
 
-        public bool GenerateTenantDebugData(DbIndex tenantDb, string prefix)
+        public void GenerateTenantDebugData(DbIndex tenantDb, string prefix)
         {
             var remedies = new RemedyUtility.DbStub[]
             {
@@ -161,7 +160,11 @@ namespace MixedDbDistributionTask.Services
             };
 
             DatabaseWriter.InsertAppointments(tenantDb, appointments);
-            return true;
+        }
+
+        public void GenerateApiKeys(DbIndex master, string[] tenants)
+        {
+            DatabaseWriter.InsertApiKeys(master, tenants);
         }
 
         private bool CreateSafe(string location, string name, bool isMaster)

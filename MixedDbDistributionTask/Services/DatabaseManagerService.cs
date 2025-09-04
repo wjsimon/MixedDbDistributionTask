@@ -68,6 +68,10 @@ namespace MixedDbDistributionTask.Services
                 {
                     _dbcs.GenerateMasterDebugData(_dbcs.MasterIndex);
                 }
+                if (request.Tenants.Any())
+                {
+                    _dbcs.GenerateApiKeys(_dbcs.MasterIndex, request.Tenants.ToArray());
+                }
             }
 
             if ((request.Selection & (1 << 1)) != 0)

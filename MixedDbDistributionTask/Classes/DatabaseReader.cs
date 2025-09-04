@@ -7,6 +7,31 @@ namespace MixedDbDistributionTask.Classes
 {
     internal static class DatabaseReader
     {
+        public static bool CheckApiKey(DbIndex master, string apiKey, out string[] tenantIds)
+        {
+            using var connection = new SqliteConnection(master.Source);
+            connection.Open();
+
+            using var sqlCommand = new SqliteCommand(SqliteSnippetsMaster.SelectTenantsFromApiKey, connection);
+            sqlCommand.Parameters.AddWithValue("@key", apiKey);
+            using var sr = sqlCommand.ExecuteReader();
+
+            if (sr.HasRows)
+            {
+                List<string> tenantIdsInternal = [];
+                while (sr.Read())
+                {
+                    tenantIdsInternal.Add(sr.GetString(0));
+                }
+
+                tenantIds = tenantIdsInternal.ToArray();
+                return true;
+            }
+
+            tenantIds = [];
+            return false;
+        }
+
         public static PracticeDto[] GetPractices(DbIndex dbIndex)
         {
             using var connection = new SqliteConnection(dbIndex.Source);

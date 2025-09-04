@@ -7,6 +7,47 @@ namespace MixedDbDistributionTask.Classes
 {
     internal static class DatabaseWriter
     {
+        private const string DEBUG_APIKEY = "ACCESS_TOKEN";
+
+        public static int InsertApiKeys(DbIndex master, string[] tenants)
+        {
+            if (tenants == null || tenants.Length == 0) { return 0; }
+
+            using var connection = new SqliteConnection(master.Source);
+            connection.Open();
+
+            int inserted = 0;
+            using (var transaction = connection.BeginTransaction())
+            {
+                var sqlCommand = connection.CreateCommand();
+                sqlCommand.CommandText = SqliteSnippetsMaster.InsertApiKey;
+
+                var idParam = sqlCommand.CreateParameter();
+                idParam.ParameterName = "@tenant_id";
+
+                var keyParam = sqlCommand.CreateParameter();
+                keyParam.ParameterName = "@key";
+
+                sqlCommand.Parameters.AddRange([idParam, keyParam]);
+
+                for (int i = 0; i < tenants.Length; i++)
+                {
+                    idParam.Value = tenants[i];
+                    keyParam.Value =
+#if DEBUG
+                        DEBUG_APIKEY; //completely unnecessary "safety" measure because I felt like it
+#else
+                        string.Empty;
+#endif
+                    inserted += sqlCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+
+            return inserted;
+        }
+
         public static int InsertPractices(DbIndex dbIndex, params PracticeUtility.DbStub[]? practices)
         {
             if (practices == null || practices.Length == 0) { return 0; }

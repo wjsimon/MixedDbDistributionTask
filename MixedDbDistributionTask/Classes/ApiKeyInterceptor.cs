@@ -1,20 +1,21 @@
 using Grpc.Core;
 using Grpc.Core.Interceptors;
+using MixedDbDistributionTask.Services;
 
 namespace MixedDbDistributionTask.Classes
 {
-    public class ApiKeyInterceptor : Interceptor
+    internal class ApiKeyInterceptor : Interceptor
     {
-        private readonly ILogger _logger;
-        private readonly Dictionary<string, string> _validApiKeys = new Dictionary<string, string>()
-        {
-            { "ACCESS_TOKEN", "henara" }
-        };
-
-        public ApiKeyInterceptor(ILogger<ApiKeyInterceptor> logger)
+        public ApiKeyInterceptor(
+            ILogger<ApiKeyInterceptor> logger,
+            DatabaseCreationService dbcs)
         {
             _logger = logger;
+            _dbcs = dbcs;
         }
+
+        private readonly ILogger _logger;
+        private readonly DatabaseCreationService _dbcs;
 
         public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
             TRequest request,
@@ -27,14 +28,17 @@ namespace MixedDbDistributionTask.Classes
             {
                 var key = context.RequestHeaders.Get("api-key");
 
-                //manually bypass where no api key required at all
-                if (context.Method.StartsWith("/databases.DatabaseManager") || context.Method == "/accessor.Accessor/GetRemedies") //make internal lookup for "public" api methods + IsPublic(context) method?
+                //manually bypass where no api key required at all; make internal lookup for "public" api methods + IsPublic(context) method?
+                //this is, conceptually, somewhat a doubling if the ApiAllowance... maybe this isn't actually needed?
+                if (context.Method.StartsWith("/databases.DatabaseManager") || 
+                    context.Method == "/accessor.Accessor/GetRemedies" || 
+                    context.Method == "/accessor.Accessor/Ping")
                 {
                     return await continuation(request, context);
                 }
-                else if (key != null && _validApiKeys.TryGetValue(key.Value, out string? tenantId))
+                else if (key != null && DatabaseReader.CheckApiKey(_dbcs.MasterIndex, key.Value, out string[] grants))
                 {
-                    context.UserState.Add("tenant", tenantId);
+                    context.UserState.Add("grants", grants);
                     return await continuation(request, context);
                 }
                 else

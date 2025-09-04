@@ -21,7 +21,15 @@
             CREATE TABLE IF NOT EXISTS PatientsPracticeLink(
                 patient_kv TEXT NOT NULL,
                 practice_ik TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS ApiKey(
+                tenant_id TEXT PRIMARY KEY,
+                key TEXT NOT NULL
             );";
+
+        public const string InsertApiKey = @"
+            INSERT INTO ApiKey (tenant_id, key)
+            VALUES (@tenant_id, @key);";
 
         public const string InsertPractice = @"
             INSERT INTO Practice (ik, name, company)
@@ -39,6 +47,7 @@
             INSERT INTO PatientsPracticeLink (patient_kv, practice_ik)
             VALUES (@patient_kv, @practice_ik)";
 
+        public const string SelectTenantsFromApiKey = @"SELECT tenant_id FROM ApiKey WHERE ApiKey.key = @key";
         public const string SelectPractice = @"SELECT * FROM Practice WHERE ik = @ik;";
         public const string SelectPractices = @"SELECT * FROM Practice;";
         public const string SelectPatient = @"SELECT * FROM Patient WHERE kv_nummer = @kv_nummer";

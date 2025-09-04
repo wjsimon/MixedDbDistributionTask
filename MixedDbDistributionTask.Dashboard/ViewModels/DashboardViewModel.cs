@@ -205,11 +205,12 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
 
 
         }
+
         private async Task LoadDatabaseAvailability()
         {
             var availability = await _dbManagerClient.GetDatabaseAvailabilityAsync(new DatabasesRequest());
             _masterAvailable = availability.MasterAvailable;
-            _availableTenants = availability.AvailableDatabases.ToImmutableArray();
+            _availableTenants = availability.AvailableDatabases.OrderByDescending(db => db == "master").ToImmutableArray();
 
             DatabaseAvailabilityChanged?.Invoke(this, EventArgs.Empty); //this also invokes a re-render for the intro... not the best communication but works for now
         }
@@ -255,19 +256,19 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                 else if (_lastQuery == QUERY_APPOINTMENTS_PFORP)
                 {
                     var reply = await _accessorClient.GetAppointmentsForPatientAtPracticeAsync(
-                        new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1] });
+                        new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1], Tenant = _selectedDatabase });
 
                     _lastQueryResult = reply.ToString();
                 }
                 else if (_lastQuery == QUERY_THERAPISTS)
                 {
-                    var replay = await _accessorClient.GetTherapistsAsync(new TherapistsRequest());
+                    var replay = await _accessorClient.GetTherapistsAsync(new TherapistsRequest() { Tenant = _selectedDatabase });
                     _lastQueryResult = replay.ToString();
                 }
                 else if (_lastQuery == QUERY_APPOINTMENTS_THERAPIST)
                 {
                     var reply = await _accessorClient.GetAppointmentsForTherapistAsync(
-                        new AppointmentRequest() { TherapistId = paramValues[0] });
+                        new AppointmentRequest() { TherapistId = paramValues[0], Tenant = _selectedDatabase });
 
                     _lastQueryResult = reply.ToString();
                 }
