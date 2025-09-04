@@ -23,16 +23,14 @@ namespace MixedDbDistributionTask.QuickStart
             await adminClient.GenerateDebugDataAsync(genReq);
 
             //lil test run
-            var pfpReply = await accessorClient.GetPfpAsync(new PfpReq() { PracticeIk = "practice1" });
             var databases = await adminClient.GetDatabaseAvailabilityAsync(new DatabasesRequest());
             var create = await adminClient.CreateMasterDatabaseAsync(new DatabaseCreationRequest());
             var practicesReply = await accessorClient.GetPracticesAsync(new PracticesRequest());
             var remediesReply = await accessorClient.GetRemediesAsync(new RemedyRequest() { FixedOnly = true });
-            var patientsReply = await accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = "practice1" });
+            var patientsReply = await accessorClient.GetPatientsForPracticeAsync(new PatientsRequest() { PracticeIk = "practice1" });
             var appointmentsForPatientsForPractice = await accessorClient.GetAppointmentsForPatientAtPracticeAsync(new AppointmentRequest() { PatientKv = "0", PracticeIk = "practice1" });
             var appointmentsForTherapist = await accessorClient.GetAppointmentsForTherapistAsync(new AppointmentRequest() { TherapistId = "therapist1" });
 
-            var pfp = pfpReply.Patients;
             var practices = practicesReply.Practices;
             var remedies = remediesReply.Remedies;
             var patients = patientsReply.Patients;

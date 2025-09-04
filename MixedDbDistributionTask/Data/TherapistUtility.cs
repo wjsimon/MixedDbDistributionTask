@@ -4,7 +4,7 @@ namespace MixedDbDistributionTask.Shared.Data
 {
     public readonly record struct TherapistUtility(string Id, string Name)
     {
-        public static TherapistDto From(DbDataReader dbReader)
+        public static TherapistDto DTO(DbDataReader dbReader)
         {
             return new TherapistDto() {
                 Id = dbReader.GetString(0),

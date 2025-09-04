@@ -6,21 +6,12 @@ package accessor;
 
 service Accessor {
 	rpc Ping(PingRequest) returns (PingReply);
-	rpc GetPfp(PfpReq) returns (PfpReply);
 	rpc GetPractices(PracticesRequest) returns (PracticesReply);
 	rpc GetRemedies(RemedyRequest) returns (RemedyReply);
-	rpc GetPatientsForPractice(PatientRequest) returns (PatientReply);
-	rpc GetTherapist(TherapistRequest) returns (TherapistReply);
+	rpc GetPatientsForPractice(PatientsRequest) returns (PatientsReply);
+	rpc GetTherapists(TherapistsRequest) returns (TherapistsReply);
 	rpc GetAppointmentsForPatientAtPractice(AppointmentRequest) returns (AppointmentReply);
 	rpc GetAppointmentsForTherapist (AppointmentRequest) returns (AppointmentReply);
-}
-
-message PfpReq {
-	string practiceIk = 1;
-}
-
-message PfpReply {
-	repeated PatientDto patients = 1;
 }
 
 message PingRequest {
@@ -68,11 +59,11 @@ message PatientDto {
 	int32 age = 4;
 }
 
-message PatientRequest {
+message PatientsRequest {
 	string practiceIk = 1;
 }
 
-message PatientReply {
+message PatientsReply {
 	repeated PatientDto patients = 1;
 }
 
@@ -82,12 +73,10 @@ message TherapistDto {
 	repeated PracticeDto practices = 3;
 }
 
-message TherapistRequest {
-	string id = 1;
-}
+message TherapistsRequest { }
 
-message TherapistReply {
-	TherapistDto therapist = 1;
+message TherapistsReply {
+	repeated TherapistDto therapists = 1;
 }
 
 message AppointmentDto {

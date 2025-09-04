@@ -42,7 +42,8 @@
             VALUES (@therapist_id, @practice_ik)
         ";
 
-        public const string SelectTherapist = @"SELECT * FROM Therapist WHERE id = @id;";
+        public const string SelectTherapist = @"SELECT * FROM Therapist WHERE id = @id";
+        public const string SelectTherapists = @"SELECT * FROM Therapist";
         public const string SelectRemedy = @"SELECT * FROM Remedy WHERE diagnosis = @diagnosis;"; //technically not needed, but used for clarity at calling point
         public const string SelectAppointmentsForPatientForPractice = @"SELECT * FROM Appointment WHERE patient = @patient_kv AND practice = @practice_ik;";
         public const string SelectAppointmentsForTherapist = @"SELECT * FROM Appointment WHERE therapist = @therapist_id";

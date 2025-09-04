@@ -141,6 +141,32 @@ namespace MixedDbDistributionTask.Classes
             }
         }
 
+        public static TherapistDto[] GetTherapists(DbIndex tenantDb)
+        {
+            using var connection = new SqliteConnection(tenantDb.Source);
+            connection.Open();
+
+            using var sqlCommand = new SqliteCommand(SqliteSnippetsTenant.SelectTherapists, connection);
+            using var sr = sqlCommand.ExecuteReader();
+
+            if (sr.HasRows)
+            {
+                List<TherapistDto> therapists = new List<TherapistDto>();
+
+                while (sr.Read())
+                {
+                    therapists.Add(
+                        TherapistUtility.DTO(sr));
+                }
+
+                return therapists.ToArray();
+            }
+            else
+            {
+                return [];
+            }
+        }
+
         public static AppointmentDto[] GetAppointmentsForTherapist(DbIndex masterDb, DbIndex tenantDb, string therapistId)
         {
             using var connectionMaster = new SqliteConnection(masterDb.Source);
@@ -233,7 +259,7 @@ namespace MixedDbDistributionTask.Classes
             TherapistDto? therapist = null;
             while (sr.Read())
             {
-                therapist = TherapistUtility.From(sr);
+                therapist = TherapistUtility.DTO(sr);
                 break;
             }
 

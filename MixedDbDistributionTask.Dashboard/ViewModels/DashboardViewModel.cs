@@ -27,6 +27,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
         private const string QUERY_PRACTICES = "practices";
         private const string QUERY_PFORP = "patients-for-a-practice";
         private const string QUERY_APPOINTMENTS_PFORP = "appointments-for-a-patient-for-a-practice";
+        private const string QUERY_THERAPISTS = "therapists";
         private const string QUERY_APPOINTMENTS_THERAPIST = "appointments-for-a-therapist";
 
         //any way to automatically resolve these?
@@ -36,6 +37,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                 { QUERY_FIXED_REMEDIES, new QueryInfo(QUERY_FIXED_REMEDIES, [], QueryInfoScope.Master) },
                 { QUERY_PRACTICES, new QueryInfo(QUERY_PRACTICES, [], QueryInfoScope.Master) },
                 { QUERY_PFORP, new QueryInfo(QUERY_PFORP, ["practiceIk"], QueryInfoScope.Master) },
+                { QUERY_THERAPISTS, new QueryInfo(QUERY_THERAPISTS, [], QueryInfoScope.Tenant) },
                 { QUERY_APPOINTMENTS_PFORP, new QueryInfo(QUERY_APPOINTMENTS_PFORP, ["patientKv", "practiceIk"], QueryInfoScope.Tenant) },
                 { QUERY_APPOINTMENTS_THERAPIST, new QueryInfo(QUERY_APPOINTMENTS_THERAPIST, ["therapistId"], QueryInfoScope.Tenant) }
             });
@@ -247,7 +249,7 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                 }
                 else if (_lastQuery == QUERY_PFORP)
                 {
-                    var reply = await _accessorClient.GetPatientsForPracticeAsync(new PatientRequest() { PracticeIk = paramValues[0] });
+                    var reply = await _accessorClient.GetPatientsForPracticeAsync(new PatientsRequest() { PracticeIk = paramValues[0] });
                     _lastQueryResult = reply.ToString();
                 }
                 else if (_lastQuery == QUERY_APPOINTMENTS_PFORP)
@@ -256,6 +258,11 @@ namespace MixedDbDistributionTask.Dashboard.ViewModels
                         new AppointmentRequest() { PatientKv = paramValues[0], PracticeIk = paramValues[1] });
 
                     _lastQueryResult = reply.ToString();
+                }
+                else if (_lastQuery == QUERY_THERAPISTS)
+                {
+                    var replay = await _accessorClient.GetTherapistsAsync(new TherapistsRequest());
+                    _lastQueryResult = replay.ToString();
                 }
                 else if (_lastQuery == QUERY_APPOINTMENTS_THERAPIST)
                 {

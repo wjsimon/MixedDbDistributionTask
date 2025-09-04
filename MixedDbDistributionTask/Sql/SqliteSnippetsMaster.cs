@@ -1,7 +1,4 @@
-﻿using Google.Protobuf.Collections;
-using Microsoft.AspNetCore.Http.HttpResults;
-
-namespace MixedDbDistributionTask.Sql
+﻿namespace MixedDbDistributionTask.Sql
 {
     public static class SqliteSnippetsMaster
     {
@@ -44,7 +41,7 @@ namespace MixedDbDistributionTask.Sql
 
         public const string SelectPractice = @"SELECT * FROM Practice WHERE ik = @ik;";
         public const string SelectPractices = @"SELECT * FROM Practice;";
-
+        public const string SelectPatient = @"SELECT * FROM Patient WHERE kv_nummer = @kv_nummer";
         public const string SelectPatientsForPractice = @"
             SELECT * FROM Patient
             JOIN PatientsPracticeLink ON Patient.kv_nummer = PatientsPracticeLink.patient_kv
@@ -53,7 +50,5 @@ namespace MixedDbDistributionTask.Sql
         public const string SelectRemedy = @"SELECT * FROM Remedy WHERE diagnosis = @diagnosis;";
         public const string SelectRemedies = @"SELECT * FROM Remedy";
         public const string SelectFixedRemedies = @"SELECT * FROM Remedy WHERE is_fixed_type = 1";
-        public const string SelectPatient = @"SELECT * FROM Patient WHERE kv_nummer = @kv_nummer";
-        //public const string SelectPatientsForPractice = @"SELECT * FROM Patient, Practice WHERE Patient.practice_ik = Practice.ik AND Practice.ik = @practice_ik";
     }
 }

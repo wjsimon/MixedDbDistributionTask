@@ -18,19 +18,6 @@ namespace MixedDbDistributionTask.Services
         private readonly ILogger<AccessorService> _logger;
         private readonly DatabaseCreationService _dbcs;
 
-        public override Task<PfpReply> GetPfp(PfpReq request, ServerCallContext context)
-        {
-            var reply = new PfpReply();
-            if (AllowGlobal(_dbcs, context, out DbIndex? master))
-            {
-                if (master == null) { throw new Exception("something went VERY wrong"); }
-                reply.Patients.AddRange(DatabaseReader.GetPatientsForPractice((DbIndex)master, request.PracticeIk));
-            }
-
-            return Task.FromResult(reply);
-
-        }
-
         public override Task<PingReply> Ping(PingRequest request, ServerCallContext context)
         {
             return Task.FromResult(new PingReply { Message = "Hello " + request.Payload });
@@ -67,10 +54,9 @@ namespace MixedDbDistributionTask.Services
             return Task.FromResult(reply);
         }
 
-        public override Task<PatientReply> GetPatientsForPractice(PatientRequest request, ServerCallContext context)
+        public override Task<PatientsReply> GetPatientsForPractice(PatientsRequest request, ServerCallContext context)
         {
-            var reply = new PatientReply();
-
+            var reply = new PatientsReply();
             if (AllowGlobal(_dbcs, context, out DbIndex? master))
             {
                 if (master == null) { throw new Exception("something went VERY wrong"); }
@@ -90,6 +76,19 @@ namespace MixedDbDistributionTask.Services
                     DatabaseReader.GetAppointmentsForPatientForPractice(_dbcs.MasterIndex, tenantDb, request.PatientKv, request.PracticeIk));
             }
                 
+            return Task.FromResult(reply);
+        }
+
+
+        public override Task<TherapistsReply> GetTherapists(TherapistsRequest request, ServerCallContext context)
+        {
+            var reply = new TherapistsReply();
+
+            if (AllowLocal(_dbcs, context, out DbIndex tenantDb))
+            {
+                reply.Therapists.AddRange(DatabaseReader.GetTherapists(tenantDb));
+            }
+            
             return Task.FromResult(reply);
         }
 
