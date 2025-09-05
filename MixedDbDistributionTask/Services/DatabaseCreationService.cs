@@ -85,6 +85,7 @@ namespace MixedDbDistributionTask.Services
             };
 
             DatabaseWriter.InsertPatientPracticeRelations(master, relations);
+            DatabaseWriter.InsertApiKeys(master, ["master"]);
         }
 
         public void GenerateTenantDebugData(DbIndex tenantDb, string prefix)
